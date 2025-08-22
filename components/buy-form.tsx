@@ -20,11 +20,13 @@ interface OrderItem {
   unit_price: number
 }
 
-export function OrderForm() {
+export function BuyForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [userName, setUserName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     customer_name: "",
@@ -65,6 +67,28 @@ export function OrderForm() {
 
     loadProducts()
   }, [])
+
+  const findUser = async () => {
+    if (!supabase) {
+      setError("La base de datos no está configurada. Por favor contacta al administrador.")
+      setLoadingProducts(false)
+      return
+    }    
+    try {
+      const { data, error } = await supabase.from("users").select("id, name").ilike("id, name", `%${userName}%`)
+
+      if (error) {
+        console.error("Error searching user:", error)
+        setError("Error al buscar usuario")
+        return
+      }      
+
+      setUsers(data || [])
+    } catch (err) {
+        console.error("Unexpected error loading products:", err)
+        setError("Error inesperado al cargar los productos.")
+    }
+  }
 
   if (error) {
     return (
@@ -183,6 +207,16 @@ export function OrderForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Customer Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="customer_name">Nombre del Usuario *</Label>
+          <Input
+            id="customer_name"
+            value={formData.customer_name}
+            onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+            placeholder="Ej: Juan Pérez"
+            required
+          />
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="status">Estado de la Orden</Label>

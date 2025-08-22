@@ -5,29 +5,47 @@ CREATE TABLE IF NOT EXISTS products (
   company VARCHAR(255) NOT NULL,
   purchase_price DECIMAL(10,2) NOT NULL CHECK (purchase_price >= 0),
   sale_price DECIMAL(10,2) NOT NULL CHECK (sale_price >= 0),
-  profit_percentage DECIMAL(5,2) GENERATED ALWAYS AS (
-    CASE 
-      WHEN purchase_price > 0 THEN ((sale_price - purchase_price) / purchase_price * 100)
-      ELSE 0
-    END
-  ) STORED,
+  expenses DECIMAL(10,2) NOT NULL CHECK (expenses >= 0),
+  profit_percentage DECIMAL(5,2) NOT NULL CHECK (profit_percentage >= 0 AND profit_percentage <= 100),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create orders table
+
+-- Create orders Admin
+CREATE TABLE IF NOT EXISTS orders_admin (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  order_number VARCHAR(50) UNIQUE NOT NULL,
+  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'cancelled')),  
+  total_amount DECIMAL(10,2) DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create order_items_admin table
+CREATE TABLE IF NOT EXISTS order_items_admin (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID NOT NULL REFERENCES orders_admin(id) ON DELETE CASCADE, 
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  unit_price DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0),
+  total_price DECIMAL(10,2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create user orders table
 CREATE TABLE IF NOT EXISTS orders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,  
   order_number VARCHAR(50) UNIQUE NOT NULL,
-  customer_name VARCHAR(255) NOT NULL,
-  customer_email VARCHAR(255),
   status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'cancelled')),
   total_amount DECIMAL(10,2) DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create order_items table (junction table for orders and products)
+-- Create user order_items table (junction table for orders and products)
 CREATE TABLE IF NOT EXISTS order_items (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,

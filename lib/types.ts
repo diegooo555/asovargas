@@ -4,6 +4,7 @@ export interface Product {
   company: string
   purchase_price: number
   sale_price: number
+  expenses: number
   profit_percentage: number
   created_at: string
   updated_at: string
@@ -33,4 +34,10 @@ export interface OrderItem {
 
 export interface OrderWithItems extends Order {
   order_items: OrderItem[]
+}
+
+export interface User {
+  id: string
+  name: string,
+  status: string
 }

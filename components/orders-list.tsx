@@ -17,7 +17,7 @@ export async function OrdersList() {
 
   if (error) {
     console.error("Error fetching orders:", error)
-    return <div>Error al cargar órdenes</div>
+    return <div>Error al cargar compras</div>
   }
 
   const getStatusColor = (status: string) => {
@@ -54,7 +54,7 @@ export async function OrdersList() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-semibold">Lista de Órdenes</CardTitle>
+          <CardTitle className="text-xl font-semibold">Lista de Compras</CardTitle>
           <div className="flex items-center space-x-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -108,12 +108,11 @@ export async function OrdersList() {
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium mb-2">No hay órdenes registradas</h3>
-            <p className="mb-4">Comienza creando tu primera orden</p>
+            <h3 className="text-lg font-medium mb-2">No hay compras registradas</h3>
             <Button asChild>
               <Link href="/ordenes/nueva">
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Crear Primera Orden
+                Crear Primera Compra
               </Link>
             </Button>
           </div>

@@ -33,6 +33,9 @@ export function DashboardHeader() {
             <Link href="/ordenes" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Órdenes
             </Link>
+            <Link href="/compras" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Compras
+            </Link>            
           </nav>
 
           {/* Action Buttons */}
@@ -49,7 +52,7 @@ export function DashboardHeader() {
                 <span className="hidden sm:inline">Nueva Orden</span>
                 <span className="sm:hidden">Nueva</span>
               </Link>
-            </Button>
+            </Button>            
           </div>
         </div>
       </div>
