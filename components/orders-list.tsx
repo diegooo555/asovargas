@@ -13,7 +13,7 @@ export async function OrdersList() {
     return <div>Error: Supabase no configurado</div>
   }
 
-  const { data: orders, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false })
+  const { data: orders, error } = await supabase.from("orders_admin").select("*").order("created_at", { ascending: false })
 
   if (error) {
     console.error("Error fetching orders:", error)
@@ -112,7 +112,7 @@ export async function OrdersList() {
             <Button asChild>
               <Link href="/ordenes/nueva">
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Crear Primera Compra
+                Crear Primera Orden
               </Link>
             </Button>
           </div>

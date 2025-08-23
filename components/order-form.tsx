@@ -142,6 +142,7 @@ export function OrderForm() {
 
       // Create order
       const orderData = {
+        user_id: "id usuario",
         order_number: generateOrderNumber(),
         customer_name: formData.customer_name,
         customer_email: formData.customer_email || null,
@@ -149,7 +150,7 @@ export function OrderForm() {
         total_amount: calculateTotal(),
       }
 
-      const { data: order, error: orderError } = await supabase.from("orders").insert([orderData]).select().single()
+      const { data: order, error: orderError } = await supabase.from("orders_admin").insert([orderData]).select().single()
 
       if (orderError) {
         throw orderError
