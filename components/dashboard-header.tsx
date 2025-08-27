@@ -15,18 +15,15 @@ export function DashboardHeader() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <BarChart3 className="h-5 w-5 text-primary-foreground" />
               </div>
-              <div>
+              <Link href="/dashboard">
                 <h1 className="text-2xl font-bold text-foreground">ASOVARGAS</h1>
                 <p className="text-sm text-muted-foreground hidden sm:block">Dashboard Empresarial</p>
-              </div>
+              </Link>
             </div>
           </div>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/dashboard" className="text-foreground hover:text-primary transition-colors font-medium">
-              Dashboard
-            </Link>
             <Link href="/dashboard/productos" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Productos
             </Link>
@@ -35,7 +32,13 @@ export function DashboardHeader() {
             </Link>
             <Link href="/dashboard/compras" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Compras
-            </Link>            
+            </Link>  
+            <Link href="/dashboard/usuarios" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Usuarios
+            </Link>  
+            <Link href="/dashboard/usuarios" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Producción
+            </Link>  
           </nav>
 
           {/* Action Buttons */}
