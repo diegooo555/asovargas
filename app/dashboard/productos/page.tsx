@@ -20,7 +20,7 @@ export default function ProductsPage() {
             <p className="text-muted-foreground mt-2">Administra tu inventario de productos y precios</p>
           </div>
           <Button asChild>
-            <Link href="/productos/nuevo">
+            <Link href="/dashboard/productos/nuevo">
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Producto
             </Link>

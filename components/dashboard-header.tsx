@@ -24,16 +24,16 @@ export function DashboardHeader() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/dashboard" className="text-foreground hover:text-primary transition-colors font-medium">
               Dashboard
             </Link>
-            <Link href="/productos" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/dashboard/productos" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Productos
             </Link>
-            <Link href="/ordenes" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/dashboard/ordenes" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Órdenes
             </Link>
-            <Link href="/compras" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/dashboard/compras" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Compras
             </Link>            
           </nav>
@@ -41,13 +41,13 @@ export function DashboardHeader() {
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
             <Button variant="outline" size="sm" asChild className="hidden sm:flex bg-transparent">
-              <Link href="/productos/nuevo">
+              <Link href="/dashboard/productos/nuevo">
                 <Package className="h-4 w-4 mr-2" />
                 Nuevo Producto
               </Link>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/ordenes/nueva">
+              <Link href="/dashboard/ordenes/nueva">
                 <Plus className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Nueva Orden</span>
                 <span className="sm:hidden">Nueva</span>

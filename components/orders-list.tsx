@@ -13,7 +13,7 @@ export async function OrdersList() {
     return <div>Error: Supabase no configurado</div>
   }
 
-  const { data: orders, error } = await supabase.from("orders_admin").select("*").order("created_at", { ascending: false })
+  const { data: orders, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false })
 
   if (error) {
     console.error("Error fetching orders:", error)
@@ -97,7 +97,7 @@ export async function OrdersList() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/ordenes/${order.id}`}>
+                    <Link href={`/dashboard/ordenes/${order.id}`}>
                       <Eye className="h-4 w-4" />
                     </Link>
                   </Button>

@@ -42,10 +42,10 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
   try {
     const { data: order, error } = await supabase
-      .from("orders_admin")
+      .from("orders")
       .select(`
         *,
-        order_items_admin (
+        order_items (
           *,
           product:products (*)
         )

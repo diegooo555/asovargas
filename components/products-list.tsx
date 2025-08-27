@@ -68,7 +68,7 @@ export async function ProductsList() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/productos/${product.id}/editar`}>
+                    <Link href={`/dashboard/productos/${product.id}/editar`}>
                       <Edit className="h-4 w-4" />
                     </Link>
                   </Button>

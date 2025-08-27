@@ -27,9 +27,7 @@ export function OrderForm() {
   const [products, setProducts] = useState<Product[]>([])
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    customer_name: "",
-    customer_email: "",
-    status: "pending" as const,
+    status: "completed" as const,
   })
   const [orderItems, setOrderItems] = useState<OrderItem[]>([{ product_id: "", quantity: 1, unit_price: 0 }])
 
@@ -142,15 +140,12 @@ export function OrderForm() {
 
       // Create order
       const orderData = {
-        user_id: "id usuario",
+        user_id: "956a0f62-0db2-4f55-a574-4b8509682c89",
         order_number: generateOrderNumber(),
-        customer_name: formData.customer_name,
-        customer_email: formData.customer_email || null,
-        status: formData.status,
         total_amount: calculateTotal(),
       }
 
-      const { data: order, error: orderError } = await supabase.from("orders_admin").insert([orderData]).select().single()
+      const { data: order, error: orderError } = await supabase.from("orders").insert([orderData]).select().single()
 
       if (orderError) {
         throw orderError
@@ -168,7 +163,9 @@ export function OrderForm() {
 
       if (itemsError) {
         throw itemsError
-      }
+      } 
+
+      
 
       router.push("/ordenes")
       router.refresh()
