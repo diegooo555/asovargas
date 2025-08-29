@@ -7,11 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Building2, Leaf } from "lucide-react"
 import { useActionState } from "react"
 import { authenticate } from "@/app/lib/actions"
-import { useSearchParams } from "next/navigation"
 
 export default function LoginPage() {
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
 
   const [errorMessage, formAction, isPending] = useActionState(
     authenticate,
@@ -79,8 +76,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Callback hidden */}
-                <input type="hidden" name="redirectTo" value={callbackUrl} />
-
+                  <input type="hidden" name="redirectTo" value="/dashboard" />
                 {/* Botón */}
                 <Button
                   type="submit"

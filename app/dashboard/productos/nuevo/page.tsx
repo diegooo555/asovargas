@@ -1,4 +1,3 @@
-import { DashboardHeader } from "@/components/dashboard-header"
 import { ProductForm } from "@/components/product-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
