@@ -5,7 +5,8 @@ export interface Product {
   purchase_price: number
   sale_price: number
   expenses: number
-  profit_percentage: number
+  profit_percentage: number,
+  quantity: number,
   created_at: string
   updated_at: string
 }

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Package, Edit, Search, TrendingUp } from "lucide-react"
+import { Package, Edit, Search, TrendingUp, Tag } from "lucide-react"
 import { createServerClient } from "@/lib/supabase/server"
 import Link from "next/link"
 import { DeleteProductButton } from "@/components/delete-product-button"
@@ -52,6 +52,10 @@ export async function ProductsList() {
                   <div className="flex-1">
                     <h3 className="font-semibold text-foreground">{product.name}</h3>
                     <p className="text-sm text-muted-foreground">{product.company}</p>
+                        <Badge variant="secondary" className="bg-green-200 text-green-800 m-2">
+                          <Tag className="h-6 w-6 mr-1" />
+                          Disponibles {product?.quantity}
+                        </Badge>  
                     <div className="flex items-center space-x-4 mt-2">
                       <span className="text-sm text-muted-foreground">
                         Compra: ${product.purchase_price?.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
@@ -62,7 +66,7 @@ export async function ProductsList() {
                       <Badge variant="secondary" className="bg-green-100 text-green-800">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         {product.profit_percentage?.toFixed(1)}%
-                      </Badge>
+                      </Badge>                    
                     </div>
                   </div>
                 </div>

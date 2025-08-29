@@ -27,6 +27,7 @@ export function ProductForm({ product }: ProductFormProps) {
     sale_price: product?.sale_price?.toString() || "",
     expenses: product?.expenses?.toString() || "3850",
     percentage: product?.profit_percentage?.toString() || "",
+    quantity: product?.quantity?.toString() || ""
   })
 
   const purchasePrice = Number.parseFloat(formData.purchase_price) || 0
@@ -156,7 +157,13 @@ export function ProductForm({ product }: ProductFormProps) {
             placeholder="0.00"
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <p className="font-extrabold text-green-600">Cantidad en Bodega:</p>
+          <p className="font-bold text-green-600 p-2 border rounded-md">{product?.quantity}</p>
         </div>        
+ 
       </div>
 
       {/* Profit Calculation */}

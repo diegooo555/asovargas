@@ -17,10 +17,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" >
-      <body>
+    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="font-sans antialiased">
         <div className="min-h-screen bg-background">
-          <DashboardHeader/>
+          <DashboardHeader />
           {children}
         </div>
       </body>
