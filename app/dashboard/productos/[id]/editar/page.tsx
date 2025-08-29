@@ -8,28 +8,26 @@ import { createServerClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 
 interface EditProductPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const supabase = createServerClient()
+  const { id } = await params
 
   if (!supabase) {
     return <div>Error: Supabase no configurado</div>
   }
 
-  const { data: product, error } = await supabase.from("products").select("*").eq("id", params.id).single()
+  const { data: product, error } = await supabase.from("products").select("*").eq("id", id).single()
 
   if (error || !product) {
     notFound()
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader />
-
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="flex items-center space-x-4 mb-8">
@@ -57,6 +55,5 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
           </Card>
         </div>
       </main>
-    </div>
   )
 }

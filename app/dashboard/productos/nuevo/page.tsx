@@ -7,9 +7,6 @@ import { Button } from "@/components/ui/button"
 
 export default function NewProductPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader />
-
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="flex items-center space-x-4 mb-8">
@@ -37,6 +34,5 @@ export default function NewProductPage() {
           </Card>
         </div>
       </main>
-    </div>
   )
 }

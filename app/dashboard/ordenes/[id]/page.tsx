@@ -8,18 +8,17 @@ import { notFound } from "next/navigation"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface OrderPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function OrderPage({ params }: OrderPageProps) {
   const supabase = createServerClient()
+  const { id } = await params;
 
   if (!supabase) {
     return (
-      <div className="min-h-screen bg-background">
-        <DashboardHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center space-x-4 mb-8">
             <Button variant="ghost" size="sm" asChild>
@@ -36,7 +35,6 @@ export default async function OrderPage({ params }: OrderPageProps) {
             </AlertDescription>
           </Alert>
         </main>
-      </div>
     )
   }
 
@@ -50,7 +48,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
           product:products (*)
         )
       `)
-      .eq("id", params.id)
+      .eq("id", id)
       .single()
 
     if (error) {
@@ -59,14 +57,11 @@ export default async function OrderPage({ params }: OrderPageProps) {
     }
 
     if (!order) {
-      console.log("[v0] Order not found for ID:", params.id)
+      console.log("[v0] Order not found for ID:", id)
       notFound()
     }
 
     return (
-      <div className="min-h-screen bg-background">
-        <DashboardHeader />
-
         <main className="container mx-auto px-4 py-8">
           {/* Page Header */}
           <div className="flex items-center space-x-4 mb-8">
@@ -85,7 +80,6 @@ export default async function OrderPage({ params }: OrderPageProps) {
           {/* Order Details */}
           <OrderDetails order={order} />
         </main>
-      </div>
     )
   } catch (error) {
     console.error("[v0] Unexpected error:", error)

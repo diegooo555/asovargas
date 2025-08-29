@@ -9,8 +9,6 @@ import Link from "next/link"
 
 export default function OrdersPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader />
 
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}
@@ -32,7 +30,6 @@ export default function OrdersPage() {
           <OrdersList />
         </Suspense>
       </main>
-    </div>
   )
 }
 

@@ -19,15 +19,6 @@ export function MobileNav() {
       <SheetContent side="left" className="w-80">
         <div className="flex flex-col space-y-6 py-6">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <BarChart3 className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <Link href="/dashboard">
-              <h1 className="text-xl font-bold text-foreground">ASOVARGAS</h1>
-              <p className="text-xs text-muted-foreground">Dashboard Empresarial</p>
-            </Link>
-          </div>
 
           {/* Navigation Links */}
           <nav className="flex flex-col space-y-4">

@@ -1,6 +1,5 @@
 import { Suspense } from "react"
 import { OrdersList } from "@/components/orders-list"
-import { DashboardHeader } from "@/components/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -9,9 +8,6 @@ import Link from "next/link"
 
 export default function OrdersPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader />
-
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="flex items-center justify-between mb-8">
@@ -32,7 +28,6 @@ export default function OrdersPage() {
           <OrdersList />
         </Suspense>
       </main>
-    </div>
   )
 }
 
