@@ -36,7 +36,7 @@ export function DashboardHeader() {
             <Link href="/dashboard/usuarios" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Usuarios
             </Link>  
-            <Link href="/dashboard/usuarios" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/dashboard/produccion" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Producción
             </Link>  
           </nav>
