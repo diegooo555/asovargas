@@ -4,17 +4,18 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Plus, Users, PlusIcon } from "lucide-react"
+import { Search, Plus, Users } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AddProductionModal } from "./production-modal"
+import { toast } from "sonner"
 
 interface Client {
   client_id: string
   name: string
   type_client: "associate" | "buyer"
-  liters?: number
+  total_liters?: number
 }
 
 export function UsersList() {
@@ -26,6 +27,13 @@ export function UsersList() {
     fetchClients()
   }, [])
 
+  type SupabaseClientRow = {
+    client_id: string
+    name: string
+    type_client: "associate" | "buyer"
+    production_records?: { liters?: number }[]
+  }
+
   const fetchClients = async () => {
     try {
       if (!supabase) {
@@ -35,7 +43,9 @@ export function UsersList() {
       const { data, error } = await supabase
         .from("clients")
         .select(`
-          (id, name),
+          client_id,
+          name,
+          type_client,
           production_records (liters)
         `)
         .order("created_at", { ascending: false })
@@ -43,16 +53,21 @@ export function UsersList() {
       if (error) throw error
 
       const processedClients =
-        data?.map((client) => {
+        (data as SupabaseClientRow[] | null)?.map((client) => {
+          const totalLiters =
+            client.production_records?.reduce((sum: number, record: any) => sum + (record.liters || 0), 0) || 0
           return {
-            ...client
+            client_id: client.client_id,
+            name: client.name,
+            type_client: client.type_client,
+            total_liters: totalLiters,
           }
         }) || []
 
       setClients(processedClients)
     } catch (error) {
       console.error("Error fetching clients:", error)
-      //toast
+      toast.error("Error al cargar usuarios")
     } finally {
       setLoading(false)
     }
@@ -90,6 +105,7 @@ export function UsersList() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Total Producción</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -97,7 +113,7 @@ export function UsersList() {
           <TableBody>
             {filteredClients.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
+                <TableCell colSpan={4} className="text-center py-8">
                   <div className="flex flex-col items-center gap-2">
                     <Users className="w-8 h-8 text-gray-400" />
                     <p className="text-gray-500">No se encontraron usuarios</p>
@@ -115,22 +131,23 @@ export function UsersList() {
                 <TableRow
                   key={client.client_id}
                   className="cursor-pointer hover:bg-green-50 transition-colors"
-                  onClick={() => (window.location.href = `/dashboard/usuarios/${client.client_id}`)}
+                  onClick={() => (window.location.href = `/dashboard/produccion/${client.client_id}`)}
                 >
                   <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell className="text-left">{client?.liters ? client.liters : 0} L</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        client.type_client === "associate" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
+                      }`}
                     >
-                      <Link href={`/dashboard/usuarios/${client.client_id}`}>
-                        <PlusIcon className="w-4 h-4 mr-2" />
-                        Añadir Producción
-                      </Link>
-                    </Button>
+                      {client.type_client === "associate" ? "Asociado" : "Comprador"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-left font-medium">{client.total_liters?.toFixed(2) || "0.00"} L</TableCell>
+                  <TableCell className="text-right">
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <AddProductionModal clientId={client.client_id} clientName={client.name} onProductionAdded={fetchClients} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

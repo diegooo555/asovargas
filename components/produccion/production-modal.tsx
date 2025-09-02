@@ -10,17 +10,23 @@ import { toast } from "sonner"
 
 interface AddProductionModalProps {
   clientId: string
+  clientName: string
   onProductionAdded?: () => void // callback para refrescar datos en el listado
 }
 
-export function AddProductionModal({ clientId, onProductionAdded }: AddProductionModalProps) {
+export function AddProductionModal({ clientId, clientName, onProductionAdded }: AddProductionModalProps) {
+  const actualDate = new Date().toISOString().split("T")[0] // Formato YYYY-MM-DD
   const [liters, setLiters] = useState("")
-  const [date, setDate] = useState("")
+  const [date, setDate] = useState(actualDate)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
     try {
       setLoading(true)
+
+      if (!supabase) {
+        throw new Error("Supabase client is not initialized");
+      }
 
       const { error } = await supabase.from("production_records").insert([
         {
@@ -55,7 +61,7 @@ export function AddProductionModal({ clientId, onProductionAdded }: AddProductio
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Añadir Producción</DialogTitle>
+          <DialogTitle className="font-bold text-red-600"> {clientName}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
