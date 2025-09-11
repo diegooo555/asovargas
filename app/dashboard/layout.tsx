@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 import { DashboardHeader } from "@/components/dashboard-header"
+import { SessionProvider } from "next-auth/react"
 
 export const metadata: Metadata = {
   title: "ASOVARGAS Dashboard",

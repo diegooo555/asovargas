@@ -1,5 +1,5 @@
 import { DashboardHeader } from "@/components/dashboard-header"
-import { OrderDetails } from "@/components/order-details"
+import { OrderDetails } from "@/components/ordenes/order-details"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"

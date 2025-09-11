@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, User, CreditCard } from "lucide-react"
+import { ArrowLeft, User, CreditCard, Plus } from "lucide-react"
 import Link from "next/link"
 import { UserDetails } from "@/components/user-details"
 import { UserDebts } from "@/components/user-debts"
@@ -26,12 +26,17 @@ export default async function UserPage({ params }: UserPageProps) {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver
             </Link>
-          </Button>
+          </Button>        
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-green-900 mb-2">Detalles del Usuario</h1>
             <p className="text-green-700">Información completa y gestión de deudas</p>
           </div>
+          
           <AddDebtDialog userId={id} />
+        <Button className="bg-yellow-400 hover:bg-yellow-600">
+          <Plus className="w-4 h-4 mr-2" />
+          <Link href={`/dashboard/compras/nueva/${id}`}>Registrar Compra</Link>
+        </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

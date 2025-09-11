@@ -1,11 +1,10 @@
 import { Suspense } from "react"
-import { OrdersList } from "@/components/orders-list"
-import { DashboardHeader } from "@/components/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Plus } from "lucide-react"
 import Link from "next/link"
+import { BuyList } from "@/components/compras/buy-list"
 
 export default function OrdersPage() {
   return (
@@ -14,11 +13,11 @@ export default function OrdersPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestión de Pedidos</h1>
+            <h1 className="text-3xl font-bold text-foreground">Gestión de Compras</h1>
             <p className="text-muted-foreground mt-2">Administra las compras de los usuarios</p>
           </div>
           <Button asChild>
-            <Link href="/compras/nueva">
+            <Link href="/dashboard/compras/nueva">
               <Plus className="h-4 w-4 mr-2" />
               Nueva Compra
             </Link>
@@ -27,7 +26,7 @@ export default function OrdersPage() {
 
         {/* Orders List */}
         <Suspense fallback={<OrdersLoadingSkeleton />}>
-          <OrdersList />
+          <BuyList />
         </Suspense>
       </main>
   )

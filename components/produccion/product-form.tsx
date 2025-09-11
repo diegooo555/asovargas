@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Loader2, Calculator } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 interface ProductFormProps {
   product?: Product
@@ -93,7 +93,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <ToastContainer/>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre del Producto *</Label>

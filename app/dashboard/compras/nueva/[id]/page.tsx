@@ -1,12 +1,17 @@
-import { DashboardHeader } from "@/components/dashboard-header"
-import { OrderForm } from "@/components/order-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { BuyForm } from "@/components/compras/buy-form"
 
-export default function NewOrderPage() {
-  console.log("[v0] Rendering NewOrderPage")
+interface NewBuyPageProps {
+  params: Promise<{
+    id: string
+  }>
+}
+
+export default async function NewBuyPage({ params} : NewBuyPageProps) {
+  const { id } = await params
 
   return (
       <main className="container mx-auto px-4 py-8">
@@ -19,8 +24,8 @@ export default function NewOrderPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Nueva Orden</h1>
-            <p className="text-muted-foreground mt-2">Crea una nueva orden para un cliente</p>
+            <h1 className="text-3xl font-bold text-foreground">Nueva Compra</h1>
+            <p className="text-muted-foreground mt-2">Crea una nueva compra para un cliente</p>
           </div>
         </div>
 
@@ -28,10 +33,10 @@ export default function NewOrderPage() {
         <div className="max-w-4xl">
           <Card>
             <CardHeader>
-              <CardTitle>Información de la Orden</CardTitle>
+              <CardTitle>Información de la Compra</CardTitle>
             </CardHeader>
             <CardContent>
-              <OrderForm />
+              <BuyForm id={id} />
             </CardContent>
           </Card>
         </div>

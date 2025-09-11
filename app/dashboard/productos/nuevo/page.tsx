@@ -1,8 +1,8 @@
-import { ProductForm } from "@/components/product-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ProductForm } from "@/components/produccion/product-form"
 
 export default function NewProductPage() {
   return (
@@ -28,7 +28,7 @@ export default function NewProductPage() {
               <CardTitle>Información del Producto</CardTitle>
             </CardHeader>
             <CardContent>
-              <ProductForm />
+              <ProductForm/>
             </CardContent>
           </Card>
         </div>

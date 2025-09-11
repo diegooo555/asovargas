@@ -54,12 +54,6 @@ create table users (
   created_at timestamp with time zone default now()
 );
 
--- Insert a new user
-insert into users (name, email, password)
-values ('Diego', 'diegoooh2o@gmail.ocm', 'StrongPass123!');
-
-
-
 -- Function to update product quantity when order items are added
 CREATE OR REPLACE FUNCTION update_product_quantity_on_order()
 RETURNS TRIGGER AS $$

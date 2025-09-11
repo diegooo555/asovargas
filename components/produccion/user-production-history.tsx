@@ -12,7 +12,7 @@ import { toast } from "sonner"
 interface ProductionRecord {
   production_record_id: string
   liters: number
-  date: string
+  production_datetime: string
   created_at: string
 }
 
@@ -51,7 +51,7 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
         .from("production_records")
         .select("*")
         .eq("client_id", userId)
-        .order("date", { ascending: false })
+        .order("production_datetime", { ascending: false })
 
       if (error) throw error
 
@@ -62,7 +62,7 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
       const totalLiters = productionRecords.reduce((sum, record) => sum + record.liters, 0)
       const totalRecords = productionRecords.length
       const averageLiters = totalRecords > 0 ? totalLiters / totalRecords : 0
-      const lastProduction = productionRecords.length > 0 ? productionRecords[0].date : null
+      const lastProduction = productionRecords.length > 0 ? productionRecords[0].production_datetime : null
 
       setStats({
         totalLiters,
@@ -152,11 +152,14 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
               {records.map((record) => (
                 <TableRow key={record.production_record_id}>
                   <TableCell className="font-medium">
-                    {new Date(record.date).toLocaleDateString("es-ES", {
+                    {new Date(record.production_datetime).toLocaleDateString("es-ES", {
                       weekday: "short",
                       year: "numeric",
                       month: "short",
                       day: "numeric",
+                      hour12: true,
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </TableCell>
                   <TableCell>

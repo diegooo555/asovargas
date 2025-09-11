@@ -15,9 +15,9 @@ interface AddProductionModalProps {
 }
 
 export function AddProductionModal({ clientId, clientName, onProductionAdded }: AddProductionModalProps) {
-  const actualDate = new Date().toISOString().split("T")[0] // Formato YYYY-MM-DD
+  const actualDateTime = new Date().toISOString().slice(0, 16);
   const [liters, setLiters] = useState("")
-  const [date, setDate] = useState(actualDate)
+  const [production_datetime, setDate] = useState(actualDateTime)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
@@ -32,7 +32,7 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
         {
           client_id: clientId,
           liters: Number(liters),
-          date,
+          production_datetime,
         },
       ])
 
@@ -81,16 +81,16 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
           <div className="flex flex-col gap-2">
             <Label htmlFor="date">Fecha</Label>
             <Input
-              id="date"
-              type="date"
-              value={date}
+              id="production_datetime"
+              type="datetime-local"
+              value={production_datetime}
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={loading || !liters || !date}>
+          <Button onClick={handleSubmit} disabled={loading || !liters || !production_datetime}>
             {loading ? "Guardando..." : "Guardar"}
           </Button>
         </DialogFooter>

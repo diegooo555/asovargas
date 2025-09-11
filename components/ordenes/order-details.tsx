@@ -43,21 +43,6 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     <div className="space-y-6">
       {/* Order Header */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Información del Cliente</CardTitle>
-            <User className="h-4 w-4 ml-auto text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{order.customer_name}</div>
-            {order.customer_email && (
-              <div className="flex items-center mt-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4 mr-2" />
-                {order.customer_email}
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center space-y-0 pb-2">

@@ -1,10 +1,23 @@
+'use client'
+
 import { Suspense } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users } from "lucide-react"
 import { UsersList } from "@/components/produccion/user-list"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DownloadProductionPDF } from "@/components/produccion/download-production-pdf"
+import { supabase } from "@/lib/supabase/client"
 
 export default function UsersPage() {
+  const finalizarQuincena = async () => {
+    const { data, error } = await supabase.rpc('archive_production_records');
+    if (error) {
+      console.error("Error finalizando quincena:", error);
+    } else {
+      console.log("Quincena finalizada:", data);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
       <div className="container mx-auto px-4 py-8">
@@ -14,6 +27,7 @@ export default function UsersPage() {
             <h1 className="text-3xl font-bold text-green-900 mb-2">Gestión de Producción</h1>
             <p className="text-green-700">Administra la producción de usuarios</p>
           </div>
+          <DownloadProductionPDF />
         </div>
 
 
@@ -22,7 +36,7 @@ export default function UsersPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-green-900">
               <Users className="w-5 h-5" />
-              Lista de Usuarios
+              Lista de Producción por Usuario
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -31,6 +45,9 @@ export default function UsersPage() {
             </Suspense>
           </CardContent>
         </Card>
+        <button className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" onClick={finalizarQuincena}>
+          Finalizar Quincena
+        </button>
       </div>
     </div>
   )

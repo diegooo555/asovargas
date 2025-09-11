@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS production_records (
   production_record_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   client_id UUID NOT NULL REFERENCES clients(client_id) ON DELETE CASCADE,
   liters DECIMAL(10,2) NOT NULL CHECK (liters >= 0),
-  date DATE NOT NULL,
+  production_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

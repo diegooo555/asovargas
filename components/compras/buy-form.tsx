@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,8 @@ import { Loader2, Plus, Trash2, Package, AlertCircle } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import type { Product, User } from "@/lib/types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Skeleton } from "../ui/skeleton"
+import { UserDetails } from "../user-details"
 
 interface OrderItem {
   product_id: string
@@ -20,15 +22,12 @@ interface OrderItem {
   unit_price: number
 }
 
-export function OrderForm() {
+export function BuyForm( {id} : {id: string}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [formData, setFormData] = useState({
-    status: "completed" as const,
-  })
   const [orderItems, setOrderItems] = useState<OrderItem[]>([{ product_id: "", quantity: 1, unit_price: 0 }])
 
   // Load products on component mount
@@ -82,7 +81,7 @@ export function OrderForm() {
     )
   }
 
-  const generateOrderNumber = () => {
+  const generateBuyNumber = () => {
     const now = new Date()
     const year = now.getFullYear()
     const month = String(now.getMonth() + 1).padStart(2, "0")
@@ -138,36 +137,33 @@ export function OrderForm() {
         return
       }
 
-      // Create order
-      const orderData = {
-        user_id: "956a0f62-0db2-4f55-a574-4b8509682c89",
-        order_number: generateOrderNumber(),
+      const buyData = {
+        buy_number: generateBuyNumber(),
+        client_id: id,
         total_amount: calculateTotal(),
-      }
+      }      
 
-      const { data: order, error: orderError } = await supabase.from("orders").insert([orderData]).select().single()
+      const { data: buy, error: buyError } = await supabase.from("buys").insert([buyData]).select().single()
 
-      if (orderError) {
-        throw orderError
+      if (buyError) {
+        throw buyError
       }
 
       // Create order items
-      const orderItemsData = validItems.map((item) => ({
-        order_id: order.id,
+      const buyItemsData = validItems.map((item) => ({
+        buy_id: buy.id,
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
       }))
 
-      const { error: itemsError } = await supabase.from("order_items").insert(orderItemsData)
+      const { error: itemsError } = await supabase.from("buy_items").insert(buyItemsData)
 
       if (itemsError) {
         throw itemsError
-      } 
+      }
 
-      
-
-      router.push("/ordenes")
+      router.push("/compras")
       router.refresh()
     } catch (error) {
       console.error("Error creating order:", error)
@@ -179,26 +175,10 @@ export function OrderForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Customer Information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <div className="space-y-2">
-          <Label htmlFor="status">Estado de la Orden</Label>
-          <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pendiente</SelectItem>
-              <SelectItem value="processing">Procesando</SelectItem>
-              <SelectItem value="completed">Completada</SelectItem>
-              <SelectItem value="cancelled">Cancelada</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       {/* Order Items */}
+      <Suspense fallback={<Skeleton className="h-32 w-full"/>}>
+        <UserDetails userId={id}/>
+      </Suspense>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Productos de la Orden</CardTitle>
