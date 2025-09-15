@@ -9,14 +9,6 @@ import { DownloadProductionPDF } from "@/components/produccion/download-producti
 import { supabase } from "@/lib/supabase/client"
 
 export default function UsersPage() {
-  const finalizarQuincena = async () => {
-    const { data, error } = await supabase.rpc('archive_production_records');
-    if (error) {
-      console.error("Error finalizando quincena:", error);
-    } else {
-      console.log("Quincena finalizada:", data);
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
@@ -45,9 +37,6 @@ export default function UsersPage() {
             </Suspense>
           </CardContent>
         </Card>
-        <button className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" onClick={finalizarQuincena}>
-          Finalizar Quincena
-        </button>
       </div>
     </div>
   )

@@ -6,14 +6,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { supabase } from "@/lib/supabase/client"
-import { BarChart3, Calendar, Droplets } from "lucide-react"
+import { BarChart3, Calendar, Droplets, Edit } from "lucide-react"
 import { toast } from "sonner"
+import { Button } from "../ui/button"
+import { EditProductionModal } from "./edit-production-modal"
 
 interface ProductionRecord {
   production_record_id: string
+  client_id: string
   liters: number
   production_datetime: string
   created_at: string
+  updated_at: string
 }
 
 interface ProductionStats {
@@ -36,6 +40,8 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
     lastProduction: null,
   })
   const [loading, setLoading] = useState(true)
+  const [editingRecord, setEditingRecord] = useState<ProductionRecord | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   useEffect(() => {
     fetchProductionHistory()
@@ -77,6 +83,17 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
       setLoading(false)
     }
   }
+
+  const handleEditRecord = (record: ProductionRecord) => {
+    setEditingRecord(record)
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false)
+    setEditingRecord(null)
+    fetchProductionHistory() // Refresh data
+  }  
 
   if (loading) {
     return <Skeleton className="h-64 w-full" />
@@ -152,7 +169,7 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
               {records.map((record) => (
                 <TableRow key={record.production_record_id}>
                   <TableCell className="font-medium">
-                    {new Date(record.production_datetime).toLocaleDateString("es-ES", {
+                    {new Date(record.production_datetime).toLocaleString("es-ES", {
                       weekday: "short",
                       year: "numeric",
                       month: "short",
@@ -160,6 +177,7 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
                       hour12: true,
                       hour: "2-digit",
                       minute: "2-digit",
+                      timeZone: "America/Bogota",
                     })}
                   </TableCell>
                   <TableCell>
@@ -176,12 +194,31 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
                       Registrado
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditRecord(record)}
+                      className="hover:bg-green-50 hover:border-green-300"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </TableCell>                  
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+
+      {editingRecord && (
+        <EditProductionModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          record={editingRecord}
+          onSuccess={handleEditSuccess}
+        />
+      )}      
     </div>
   )
 }

@@ -35,11 +35,17 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
         throw new Error("Supabase client is not initialized");
       }
 
+      const utcISO = new Date(
+        production_datetime.length === 16
+          ? `${production_datetime}:00` // "YYYY-MM-DDTHH:mm:ss"
+          : production_datetime
+      ).toISOString(); // -> "YYYY-MM-DDTHH:mm:ss.sssZ" (UTC)      
+
       const { error } = await supabase.from("production_records").insert([
         {
           client_id: clientId,
           liters: Number(liters),
-          production_datetime,
+          production_datetime: utcISO,
         },
       ])
 
