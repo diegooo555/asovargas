@@ -7,8 +7,10 @@ import { supabase } from "@/lib/supabase/client"
 import { toast } from "react-toastify"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
+import { Input } from "@/components/ui/input"
 
 const PRICE_PER_LITER = 2000 // COP
+const CONFIRMATION_PASSWORD = "ACCESS"
 
 interface UserProduction {
   client_id: string
@@ -21,6 +23,7 @@ interface UserProduction {
 export function DownloadProductionPDF() {
   
   const [isGenerating, setIsGenerating] = useState(false)
+  const [confirmationPassword, setConfirmationPassword] = useState("")
 
   const fetchProductionData = async (): Promise<UserProduction[]> => {
     if (!supabase) {
@@ -68,6 +71,12 @@ export function DownloadProductionPDF() {
   }
 
   const generatePDF = async () => {
+
+    if (confirmationPassword !== CONFIRMATION_PASSWORD) {
+      toast.error("Contraseña de confirmación incorrecta")
+      return
+    }
+  
     try {
       setIsGenerating(true)
 
@@ -270,26 +279,40 @@ export function DownloadProductionPDF() {
       toast.error("Error al generar PDF. Por favor, intenta de nuevo.")
     } finally {
       setIsGenerating(false)
+      setConfirmationPassword("")
     }
   }
 
   return (
-    <Button 
-      onClick={generatePDF} 
-      disabled={isGenerating} 
-      className="bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-    >
-      {isGenerating ? (
-        <>
-          <FileText className="w-4 h-4 mr-2 animate-spin" />
-          Generando PDF...
-        </>
-      ) : (
-        <>
-          <Download className="w-4 h-4 mr-2" />
-          Finalizar Quincena
-        </>
-      )}
-    </Button>
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <Input
+        type="password"
+        value={confirmationPassword}
+        onChange={(event) => setConfirmationPassword(event.target.value)}
+        placeholder="Contraseña de confirmación"
+        autoComplete="off"
+        className="sm:max-w-xs"
+        aria-label="Contraseña de confirmación"
+      />
+      <Button
+        onClick={generatePDF}
+        disabled={
+          isGenerating || confirmationPassword !== CONFIRMATION_PASSWORD
+        }
+        className="bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+      >
+        {isGenerating ? (
+          <>
+            <FileText className="w-4 h-4 mr-2 animate-spin" />
+            Generando PDF...
+          </>
+        ) : (
+          <>
+            <Download className="w-4 h-4 mr-2" />
+            Finalizar Quincena
+          </>
+        )}
+      </Button>
+    </div>
   )
 }
