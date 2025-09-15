@@ -262,9 +262,9 @@ export function DownloadProductionPDF() {
       // Descargar PDF
       const fileName = `reporte-produccion-${new Date().toISOString().split("T")[0]}.pdf`
       pdf.save(fileName)
-
-      toast.success("PDF generado exitosamente")
       await endFortnight();
+      toast.success("PDF generado exitosamente")
+      
     } catch (error) {
       console.error("Error generando PDF:", error)
       toast.error("Error al generar PDF. Por favor, intenta de nuevo.")
@@ -287,7 +287,7 @@ export function DownloadProductionPDF() {
       ) : (
         <>
           <Download className="w-4 h-4 mr-2" />
-          Descargar Reporte
+          Finalizar Quincena
         </>
       )}
     </Button>

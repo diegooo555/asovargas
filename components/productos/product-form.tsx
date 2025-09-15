@@ -161,7 +161,9 @@ export function ProductForm({ product }: ProductFormProps) {
 
         <div className="space-y-2">
           <p className="font-extrabold text-green-600">Cantidad en Bodega:</p>
-          <p className="font-bold text-green-600 p-2 border rounded-md">{product?.quantity}</p>
+          <p className="font-bold text-green-600 p-2 border rounded-md"> 
+            {product?.quantity != null ? product.quantity : "No requerido"}
+          </p>
         </div>        
  
       </div>

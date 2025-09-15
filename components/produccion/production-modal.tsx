@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase/client"
-import { toast } from "sonner"
+import { toast } from "react-toastify"
 
 interface AddProductionModalProps {
   clientId: string
@@ -14,11 +14,18 @@ interface AddProductionModalProps {
   onProductionAdded?: () => void // callback para refrescar datos en el listado
 }
 
+function getLocalDateTime() {
+  const now = new Date()
+  const offset = now.getTimezoneOffset() * 60000 // diferencia con UTC en ms
+  const local = new Date(now.getTime() - offset) // ajusta a hora local
+  return local.toISOString().slice(0, 16) // yyyy-MM-ddTHH:mm
+}
+
 export function AddProductionModal({ clientId, clientName, onProductionAdded }: AddProductionModalProps) {
-  const actualDateTime = new Date().toISOString().slice(0, 16);
   const [liters, setLiters] = useState("")
-  const [production_datetime, setDate] = useState(actualDateTime)
+  const [production_datetime, setDate] = useState(getLocalDateTime())
   const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const handleSubmit = async () => {
     try {
@@ -43,6 +50,8 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
       setDate("")
 
       if (onProductionAdded) onProductionAdded()
+      
+      setOpen(false)
     } catch (err) {
       console.error(err)
       toast.error("Error al añadir producción")
@@ -52,7 +61,7 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           Añadir Producción
