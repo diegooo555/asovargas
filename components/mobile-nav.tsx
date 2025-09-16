@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, Package, ShoppingCart, BarChart3, Plus, User, BarChart } from "lucide-react"
+import { Menu, Package, ShoppingCart, BarChart3, Plus, User, BarChart, Variable } from "lucide-react"
 
 export function MobileNav() {
   const [open, setOpen] = useState(false)
@@ -65,6 +65,13 @@ export function MobileNav() {
               <BarChart className="h-5 w-5" />
               <span>Producción</span>
             </Link> 
+
+            <Link
+            href="/dashboard/variables"
+            className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+              <Variable className="h-5 w-5"/>
+              <span>Variables</span>
+            </Link>
           </nav>
 
           {/* Action Buttons */}

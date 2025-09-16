@@ -39,6 +39,9 @@ export function DashboardHeader() {
             <Link href="/dashboard/produccion" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Producción
             </Link>  
+            <Link href="/dashboard/variables" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Variables
+            </Link>              
           </nav>
 
           {/* Action Buttons */}
