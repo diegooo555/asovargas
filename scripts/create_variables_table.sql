@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS variables (
     variable_id SERIAL PRIMARY KEY,
     detail VARCHAR(255) NOT NULL,
-    amount DECIMAL(15,8) NOT NULL DEFAULT 0,
+    amount DECIMAL(20,8) NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -23,9 +23,7 @@ CREATE TRIGGER update_variables_updated_at
 
 -- Insert some sample variables
 INSERT INTO variables (detail, amount) VALUES 
-    ('Precio por litro de leche', 2000.00),
-    ('Comisión por transacción', 0.0004),
-    ('Descuento por volumen', 0.05),
-    ('Tasa de cambio USD', 4200.00),
-    ('Límite de crédito máximo', 1000000.00)
+    ('Valor Factura', 25408000),
+    ('Litro Asociado', 2000),
+    ('Litro No Asociado', 1850)
 ON CONFLICT DO NOTHING;

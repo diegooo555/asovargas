@@ -27,7 +27,7 @@ export function VariablesList() {
 
   const fetchVariables = async () => {
     try {
-      const { data, error } = await supabase.from("variables").select("*").order("detail", { ascending: true })
+      const { data, error } = await supabase.from("variables").select("*").order("variable_id", { ascending: true })
 
       if (error) throw error
       setVariables(data || [])
