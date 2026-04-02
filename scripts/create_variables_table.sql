@@ -25,5 +25,20 @@ CREATE TRIGGER update_variables_updated_at
 INSERT INTO variables (detail, amount) VALUES 
     ('Valor Factura', 25408000),
     ('Litro Asociado', 2000),
-    ('Litro No Asociado', 1850)
+    ('Litro No Asociado', 1850),
+    ('Cuota Sostenimiento', 20000)
+ON CONFLICT DO NOTHING;
+
+
+CREATE TABLE IF NOT EXISTS fortnight_variables (
+    variable_id SERIAL PRIMARY KEY,
+    detail VARCHAR(255) NOT NULL,
+    date_value DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+INSERT INTO fortnight_variables (detail, date_value) VALUES
+    ('Inicio Quincena', '2025-09-01'),
+    ('Fin Quincena', '2025-09-15')
 ON CONFLICT DO NOTHING;

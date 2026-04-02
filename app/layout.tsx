@@ -3,7 +3,8 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ToastContainer } from "react-toastify"
-import "./globals.css"
+import Providers from "@/app/providers/react-query-provider"
+import '../styles/globals.css'
 
 export const metadata: Metadata = {
   title: "ASOVARGAS - Sistema de Gestión Empresarial",
@@ -19,8 +20,10 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="font-sans antialiased">
+        <Providers>
         {children}
         <ToastContainer/>
+        </Providers>
       </body>
     </html>
   )

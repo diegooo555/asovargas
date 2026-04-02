@@ -5,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users } from "lucide-react"
 import { UsersList } from "@/components/produccion/user-list"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DownloadProductionPDF } from "@/components/produccion/download-production-pdf"
-import { supabase } from "@/lib/supabase/client"
+import { ProductionInvoice } from "@/components/produccion/production-invoice"
 
 export default function UsersPage() {
 
@@ -19,7 +18,7 @@ export default function UsersPage() {
             <h1 className="text-3xl font-bold text-green-900 mb-2">Gestión de Producción</h1>
             <p className="text-green-700">Administra la producción de usuarios</p>
           </div>
-          <DownloadProductionPDF />
+          
         </div>
 
 

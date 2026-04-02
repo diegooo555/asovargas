@@ -140,7 +140,7 @@ export function OrderForm() {
 
       // Create order
       const orderData = {
-        user_id: "956a0f62-0db2-4f55-a574-4b8509682c89",
+        user_id: "4391edfe-8169-4a97-b5ba-aea0539a30ac",
         order_number: generateOrderNumber(),
         total_amount: calculateTotal(),
       }
@@ -163,9 +163,9 @@ export function OrderForm() {
 
       if (itemsError) {
         throw itemsError
-      } 
+      }
 
-      
+
 
       router.push("/dashboard/compras")
       router.refresh()

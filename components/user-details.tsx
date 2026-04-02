@@ -4,17 +4,7 @@ import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { supabase } from "@/lib/supabase/client"
-
-interface Client {
-  client_id: string
-  name: string
-  type_client: "associate" | "buyer"
-  created_at: string
-}
-
-interface UserDetailsProps {
-  userId: string
-}
+import { Client, UserDetailsProps } from "@/lib/types"
 
 export function UserDetails({ userId }: UserDetailsProps) {
   const [client, setClient] = useState<Client | null>(null)
@@ -68,12 +58,29 @@ export function UserDetails({ userId }: UserDetailsProps) {
       <div className="space-y-2 text-sm">
         <div>
           <span className="font-medium text-gray-600">ID:</span>
-          <span className="ml-2 font-mono text-xs">{client.client_id}</span>
+          <span className="ml-2 text-green-900 font-bold">{client.client_id}</span>
         </div>
+        <div>
+          <span className="font-medium text-gray-600">Documento:</span>
+          <span className="ml-2 text-green-900 font-bold">{client.document}</span>
+        </div>
+        <div>
+          <span className="font-medium text-gray-600">Telefono:</span>
+          <span className="ml-2 text-green-900 font-bold">{client.phone}</span>
+        </div>        
+        <div>
+          <span className="font-medium text-gray-600">Dirección</span>
+          <span className="ml-2 text-green-900 font-bold">{client.address}</span>
+        </div>
+        <div>
+          <span className="font-medium text-gray-600">Tope Credito:</span>
+          <span className="ml-2 text-green-900 font-bold">{client.credits}</span>
+        </div>              
         <div>
           <span className="font-medium text-gray-600">Fecha de registro:</span>
           <span className="ml-2">{new Date(client.created_at).toLocaleDateString()}</span>
         </div>
+        
       </div>
     </div>
   )

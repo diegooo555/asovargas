@@ -14,6 +14,7 @@ interface Client {
   client_id: string
   name: string
   type_client: "associate" | "buyer"
+  credits: number
   created_at: string
   total_debts?: number
   pending_debts?: number

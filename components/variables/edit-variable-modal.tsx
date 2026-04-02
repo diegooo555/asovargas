@@ -17,21 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { supabase } from "@/lib/supabase/client"
 import { toast } from "react-toastify"
-
-interface Variable {
-  variable_id: number
-  detail: string
-  amount: number
-  created_at: string
-  updated_at: string
-}
-
-interface EditVariableModalProps {
-  variable: Variable
-  isOpen: boolean
-  onClose: () => void
-  onSuccess: () => void
-}
+import { Variable, EditVariableModalProps } from "@/lib/types"
 
 export function EditVariableModal({ variable, isOpen, onClose, onSuccess }: EditVariableModalProps) {
   const [detail, setDetail] = useState(variable.detail)

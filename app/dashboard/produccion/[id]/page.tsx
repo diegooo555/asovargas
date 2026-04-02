@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, User, BarChart3 } from "lucide-react"
 import Link from "next/link"
-import { UserDetails } from "@/components/user-details"
 import { UserProductionHistory } from "@/components/produccion/user-production-history"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -32,26 +31,9 @@ export default async function UserPage({ params }: UserPageProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* User Details */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-900">
-                  <User className="w-5 h-5" />
-                  Información Personal
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Suspense fallback={<Skeleton className="h-32 w-full" />}>
-                  <UserDetails userId={id} />
-                </Suspense>
-              </CardContent>
-            </Card>
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
           {/* Production History */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-900">

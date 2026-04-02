@@ -17,7 +17,7 @@ interface UserProduction {
   name: string
   total_liters: number
   total_payment: number
-  production_records: { liters: number; created_at: string }[]
+  production_records: { liters: number; production_datetime: string }[]
 }
 
 export function DownloadProductionPDF() {
@@ -35,7 +35,7 @@ export function DownloadProductionPDF() {
         name,
         production_records (
           liters,
-          created_at
+          production_datetime
         )
       `)
 
@@ -44,7 +44,7 @@ export function DownloadProductionPDF() {
     }
 
     return data
-      .map((client: { client_id: string; name: string; production_records: { liters: number; created_at: string }[] }) => {
+      .map((client: { client_id: string; name: string; production_records: { liters: number; production_datetime: string }[] }) => {
         const totalLiters = client.production_records.reduce(
           (sum: number, record: any) => sum + Number.parseFloat(record.liters || 0),
           0,
@@ -81,6 +81,8 @@ export function DownloadProductionPDF() {
       setIsGenerating(true)
 
       const productionData = await fetchProductionData()
+
+      console.log(productionData)
 
       if (productionData.length === 0) {
         toast.error("No hay registros de producción para generar el PDF")
@@ -135,7 +137,7 @@ export function DownloadProductionPDF() {
 
         // Preparar datos para la tabla del usuario
         const tableData = user.production_records?.map((record: any) => [
-          new Date(record.created_at).toLocaleDateString("es-CO"),
+          new Date(record.production_datetime).toLocaleDateString("es-CO"),
           `${Number.parseFloat(record.liters || 0).toFixed(2)} L`,
           `$${(Number.parseFloat(record.liters || 0) * PRICE_PER_LITER).toLocaleString("es-CO")}`
         ]) || []
@@ -271,7 +273,7 @@ export function DownloadProductionPDF() {
       // Descargar PDF
       const fileName = `reporte-produccion-${new Date().toISOString().split("T")[0]}.pdf`
       pdf.save(fileName)
-      await endFortnight();
+      //await endFortnight();
       toast.success("PDF generado exitosamente")
       
     } catch (error) {

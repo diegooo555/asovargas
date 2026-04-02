@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { VariablesList } from "@/components/variables/variables-list"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DownloadProductionPDF } from "@/components/produccion/download-production-pdf"
 
 export default function VariablesPage() {
   return (
@@ -19,6 +20,7 @@ export default function VariablesPage() {
         <CardHeader>
           <CardTitle className="text-green-700">Variables Configuradas</CardTitle>
           <CardDescription>Lista de todas las variables del sistema con sus valores actuales</CardDescription>
+          <DownloadProductionPDF/>
         </CardHeader>
         <CardContent>
           <Suspense fallback={<VariablesListSkeleton />}>

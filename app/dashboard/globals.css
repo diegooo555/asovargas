@@ -121,3 +121,49 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Print styles for invoices */
+@media print {
+  /* Hide navigation, header, and action buttons */
+  header,
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset background and colors for printing */
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove shadows and borders from cards */
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  .print\:border-none {
+    border: none !important;
+  }
+
+  /* Ensure the invoice fills the page */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Page settings */
+  @page {
+    size: letter;
+    margin: 1.5cm;
+  }
+
+  /* Avoid page breaks inside elements */
+  table, .signature-area {
+    page-break-inside: avoid;
+  }
+}
+

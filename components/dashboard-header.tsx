@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Package, Plus, BarChart3 } from "lucide-react"
+import { Package, Plus, BarChart3, Syringe, ShoppingBag } from "lucide-react"
 import { MobileNav } from "@/components/mobile-nav"
 
 export function DashboardHeader() {
@@ -30,18 +30,21 @@ export function DashboardHeader() {
             <Link href="/dashboard/ordenes" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Órdenes
             </Link>
-            <Link href="/dashboard/compras" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-              Compras
-            </Link>  
             <Link href="/dashboard/usuarios" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Usuarios
-            </Link>  
+            </Link>
             <Link href="/dashboard/produccion" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Producción
-            </Link>  
+            </Link>
+            <Link href="/dashboard/pajillas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Pajillas
+            </Link>
+            <Link href="/dashboard/ventas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Ventas
+            </Link>
             <Link href="/dashboard/variables" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Variables
-            </Link>              
+            </Link>
           </nav>
 
           {/* Action Buttons */}
@@ -58,7 +61,7 @@ export function DashboardHeader() {
                 <span className="hidden sm:inline">Nueva Orden</span>
                 <span className="sm:hidden">Nueva</span>
               </Link>
-            </Button>            
+            </Button>
           </div>
         </div>
       </div>

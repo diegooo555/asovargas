@@ -3,6 +3,11 @@ CREATE TABLE IF NOT EXISTS clients (
   client_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   type_client VARCHAR(100) NOT NULL CHECK (type_client IN ('associate', 'buyer')),
+  credits DECIMAL(10,2) NOT NULL CHECK (credits >= 0),
+  email VARCHAR(255) UNIQUE,
+  phone VARCHAR(10) NOT NULL CHECK (phone ~ '^[0-9]{10}$'),
+  address TEXT,
+  document VARCHAR(20) UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
