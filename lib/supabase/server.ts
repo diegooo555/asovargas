@@ -3,10 +3,10 @@ import { cache } from "react";
 
 // Check if Supabase environment variables are available
 export const isSupabaseConfigured =
-  typeof process.env.ASOVARGAS_SUPABASE_URL === "string" &&
-  process.env.ASOVARGAS_SUPABASE_URL.length > 0 &&
-  typeof process.env.ASOVARGAS_SUPABASE_ANON_KEY === "string" &&
-  process.env.ASOVARGAS_SUPABASE_ANON_KEY.length > 0;
+  typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string" &&
+  process.env.NEXT_PUBLIC_SUPABASE_URL.length > 0 &&
+  typeof process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string" &&
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.length > 0;
 
 // Create a cached version of the Supabase client for Server Components
 export const createServerClient = cache(() => {
@@ -16,7 +16,7 @@ export const createServerClient = cache(() => {
   }
 
   return createClient(
-    process.env.ASOVARGAS_SUPABASE_URL!,
-    process.env.ASOVARGAS_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 });
