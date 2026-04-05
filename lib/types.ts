@@ -118,10 +118,13 @@ export interface Pajilla {
   updated_at: string
 }
 
+export type SaleType = "contado" | "transferencia" | "credito"
+
 export interface Buy {
   id: string
   client_id: string
   buy_number: string
+  sale_type: SaleType
   total_amount: number
   created_at: string
   updated_at: string

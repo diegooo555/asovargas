@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Plus, Trash2, Package, AlertCircle, Syringe, User, FileText, Printer } from "lucide-react"
+import { Loader2, Plus, Trash2, Package, AlertCircle, Syringe, User, FileText, Printer, CreditCard, Banknote, ArrowRightLeft } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
-import type { Product, Client, Pajilla } from "@/lib/types"
+import type { Product, Client, Pajilla, SaleType } from "@/lib/types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { toast } from "react-toastify"
 
@@ -36,6 +36,7 @@ export function VentaForm() {
   const [error, setError] = useState<string | null>(null)
 
   const [selectedClientId, setSelectedClientId] = useState("")
+  const [saleType, setSaleType] = useState<SaleType>("contado")
   const [productItems, setProductItems] = useState<ProductItem[]>([])
   const [pajillaItems, setPajillaItems] = useState<PajillaItem[]>([])
 
@@ -188,6 +189,7 @@ export function VentaForm() {
       const buyData = {
         client_id: selectedClientId,
         buy_number: generateBuyNumber(),
+        sale_type: saleType,
         total_amount: grandTotal,
       }
 
@@ -276,6 +278,42 @@ export function VentaForm() {
                 <p className="text-xs text-muted-foreground">Dirección: {selectedClient.address}</p>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sale Type Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center space-x-2">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <span>Tipo de Venta</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { value: "contado" as SaleType, label: "Contado", icon: Banknote, description: "Pago en efectivo" },
+              { value: "transferencia" as SaleType, label: "Transferencia", icon: ArrowRightLeft, description: "Transferencia bancaria" },
+              { value: "credito" as SaleType, label: "Crédito", icon: CreditCard, description: "Pago a crédito" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setSaleType(option.value)}
+                className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200 ${
+                  saleType === option.value
+                    ? "border-primary bg-primary/10 shadow-md"
+                    : "border-muted hover:border-primary/40 hover:bg-muted/50"
+                }`}
+              >
+                <option.icon className={`h-6 w-6 ${saleType === option.value ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-sm font-semibold ${saleType === option.value ? "text-primary" : "text-foreground"}`}>
+                  {option.label}
+                </span>
+                <span className="text-xs text-muted-foreground">{option.description}</span>
+              </button>
+            ))}
           </div>
         </CardContent>
       </Card>

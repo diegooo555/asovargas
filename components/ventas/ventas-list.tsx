@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ShoppingBag, Eye, Search, Calendar, User } from "lucide-react"
+import { ShoppingBag, Eye, Search, Calendar, User, Banknote, ArrowRightLeft, CreditCard } from "lucide-react"
 import { createServerClient } from "@/lib/supabase/server"
 import Link from "next/link"
+import type { SaleType } from "@/lib/types"
 
 export async function VentasList() {
   const supabase = createServerClient()
@@ -53,6 +54,21 @@ export async function VentasList() {
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
                       <h3 className="font-semibold text-foreground">{venta.buy_number}</h3>
+                      {(() => {
+                        const typeConfig: Record<string, { label: string; className: string; icon: typeof CreditCard }> = {
+                          contado: { label: "Contado", className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", icon: Banknote },
+                          transferencia: { label: "Transferencia", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400", icon: ArrowRightLeft },
+                          credito: { label: "Cr\u00e9dito", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", icon: CreditCard },
+                        }
+                        const config = typeConfig[venta.sale_type] || typeConfig.contado
+                        const Icon = config.icon
+                        return (
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
+                            <Icon className="h-3 w-3" />
+                            {config.label}
+                          </span>
+                        )
+                      })()}
                     </div>
                     <div className="flex items-center space-x-2 mt-1">
                       <User className="h-3 w-3 text-muted-foreground" />

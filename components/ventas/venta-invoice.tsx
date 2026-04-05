@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Printer, Download, Package, Syringe } from "lucide-react"
-import type { BuyWithItems } from "@/lib/types"
+import { Printer, Download, Package, Syringe, CreditCard, Banknote, ArrowRightLeft } from "lucide-react"
+import type { BuyWithItems, SaleType } from "@/lib/types"
 
 interface VentaInvoiceProps {
   venta: BuyWithItems
@@ -17,6 +17,14 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
   const productsTotal = venta.buy_items?.reduce((t, item) => t + (item.total_price || 0), 0) || 0
   const pajillasTotal = venta.buy_pajilla_items?.reduce((t, item) => t + (item.total_price || 0), 0) || 0
   const grandTotal = venta.total_amount || productsTotal + pajillasTotal
+
+  const saleTypeLabels: Record<SaleType, { label: string; icon: typeof CreditCard }> = {
+    contado: { label: "Contado", icon: Banknote },
+    transferencia: { label: "Transferencia", icon: ArrowRightLeft },
+    credito: { label: "Crédito", icon: CreditCard },
+  }
+  const currentSaleType = saleTypeLabels[venta.sale_type] || saleTypeLabels.contado
+  const SaleTypeIcon = currentSaleType.icon
 
   return (
     <div>
@@ -55,6 +63,10 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
                     minute: "2-digit",
                   })}
                 </p>
+                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                  <SaleTypeIcon className="h-3.5 w-3.5" />
+                  {currentSaleType.label}
+                </div>
               </div>
             </div>
           </div>
