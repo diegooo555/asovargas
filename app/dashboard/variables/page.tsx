@@ -4,6 +4,8 @@ import { VariablesList } from "@/components/variables/variables-list"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DownloadProductionPDF } from "@/components/produccion/download-production-pdf"
 
+export const dynamic = "force-dynamic"
+
 export default function VariablesPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">

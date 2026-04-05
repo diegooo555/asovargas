@@ -7,6 +7,8 @@ import { createServerClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+export const dynamic = "force-dynamic"
+
 interface OrderPageProps {
   params: Promise<{
     id: string

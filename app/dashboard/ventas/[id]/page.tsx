@@ -5,6 +5,8 @@ import Link from "next/link"
 import { createServerClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 interface VentaDetailPageProps {
   params: Promise<{ id: string }>
 }

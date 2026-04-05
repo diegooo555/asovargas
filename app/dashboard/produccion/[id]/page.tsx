@@ -6,6 +6,8 @@ import Link from "next/link"
 import { UserProductionHistory } from "@/components/produccion/user-production-history"
 import { Skeleton } from "@/components/ui/skeleton"
 
+export const dynamic = "force-dynamic"
+
 interface UserPageProps {
   params: Promise<{
     id: string

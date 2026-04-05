@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 
+export const dynamic = "force-dynamic"
+
 export default function PajillasPage() {
   return (
       <main className="container mx-auto px-4 py-8">

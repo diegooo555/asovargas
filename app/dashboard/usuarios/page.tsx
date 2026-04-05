@@ -8,6 +8,8 @@ import { UsersStats } from "@/components/users-stats"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DashboardHeader } from "@/components/dashboard-header"
 
+export const dynamic = "force-dynamic"
+
 export default function UsersPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { createServerClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 interface EditPajillaPageProps {
   params: Promise<{
     id: string

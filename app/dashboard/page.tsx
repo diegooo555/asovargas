@@ -6,6 +6,8 @@ import { ProductsOverview } from "@/components/products-overview"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
+export const dynamic = "force-dynamic"
+
 export default function DashboardPage() {
   return (
 

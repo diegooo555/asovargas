@@ -8,6 +8,8 @@ import { UserDebts } from "@/components/user-debts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AddDebtDialog } from "@/components/add-debt-client" 
 
+export const dynamic = "force-dynamic"
+
 interface UserPageProps {
   params: Promise<{
     id: string;
