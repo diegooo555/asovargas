@@ -301,11 +301,10 @@ export function VentaForm() {
                 key={option.value}
                 type="button"
                 onClick={() => setSaleType(option.value)}
-                className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200 ${
-                  saleType === option.value
-                    ? "border-primary bg-primary/10 shadow-md"
-                    : "border-muted hover:border-primary/40 hover:bg-muted/50"
-                }`}
+                className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200 ${saleType === option.value
+                  ? "border-primary bg-primary/10 shadow-md"
+                  : "border-muted hover:border-primary/40 hover:bg-muted/50"
+                  }`}
               >
                 <option.icon className={`h-6 w-6 ${saleType === option.value ? "text-primary" : "text-muted-foreground"}`} />
                 <span className={`text-sm font-semibold ${saleType === option.value ? "text-primary" : "text-foreground"}`}>
@@ -368,7 +367,15 @@ export function VentaForm() {
                       min="1"
                       max={product?.quantity || 999}
                       value={item.quantity}
-                      onChange={(e) => updateProductItem(index, "quantity", Number.parseInt(e.target.value) || 1)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        updateProductItem(
+                          index,
+                          "quantity",
+                          value === "" ? "" : Number(value)
+                        );
+                      }}
                     />
                   </div>
 
@@ -467,7 +474,15 @@ export function VentaForm() {
                       min="1"
                       max={pajilla?.quantity || 999}
                       value={item.quantity}
-                      onChange={(e) => updatePajillaItem(index, "quantity", Number.parseInt(e.target.value) || 1)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        updatePajillaItem(
+                          index,
+                          "quantity",
+                          value === "" ? "" : Number(value)
+                        );
+                      }}
                     />
                   </div>
 
