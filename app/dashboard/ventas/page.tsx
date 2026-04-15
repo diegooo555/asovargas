@@ -8,7 +8,13 @@ import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
-export default function VentasPage() {
+interface VentasPageProps {
+  searchParams: { page?: string }
+}
+
+export default function VentasPage({ searchParams }: VentasPageProps) {
+  const page = Math.max(1, Number(searchParams.page) || 1)
+
   return (
     <main className="container mx-auto px-4 py-8">
       {/* Page Header */}
@@ -27,7 +33,7 @@ export default function VentasPage() {
 
       {/* Sales List */}
       <Suspense fallback={<VentasLoadingSkeleton />}>
-        <VentasList />
+        <VentasList page={page} />
       </Suspense>
     </main>
   )

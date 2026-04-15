@@ -167,7 +167,7 @@ export function OrderForm() {
 
 
 
-      router.push("/dashboard/compras")
+      router.push("/dashboard/ordenes")
       router.refresh()
     } catch (error) {
       console.error("Error creating order:", error)
@@ -237,13 +237,15 @@ export function OrderForm() {
                   type="number"
                   min="1"
                   value={item.quantity}
-                  onChange={(e) => updateOrderItem(index, "quantity", Number.parseInt(e.target.value) || 1)}
+
+                  onChange={(e) => updateOrderItem(index, "quantity", Number.parseInt(e.target.value) || "")}
                 />
               </div>
 
               <div className="w-32 space-y-2">
                 <Label>Precio Unit.</Label>
                 <Input
+                  readOnly
                   type="number"
                   step="0.01"
                   min="0"

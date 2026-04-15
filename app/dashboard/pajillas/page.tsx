@@ -8,28 +8,34 @@ import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
-export default function PajillasPage() {
-  return (
-      <main className="container mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestión de Pajillas</h1>
-            <p className="text-muted-foreground mt-2">Administra tu inventario de pajillas de inseminación</p>
-          </div>
-          <Button asChild>
-            <Link href="/dashboard/pajillas/nueva">
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Pajilla
-            </Link>
-          </Button>
-        </div>
+interface PajillasPageProps {
+  searchParams: { page?: string }
+}
 
-        {/* Pajillas List */}
-        <Suspense fallback={<PajillasLoadingSkeleton />}>
-          <PajillasList />
-        </Suspense>
-      </main>
+export default function PajillasPage({ searchParams }: PajillasPageProps) {
+  const page = Math.max(1, Number(searchParams.page) || 1)
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Gestión de Pajillas</h1>
+          <p className="text-muted-foreground mt-2">Administra tu inventario de pajillas de inseminación</p>
+        </div>
+        <Button asChild>
+          <Link href="/dashboard/pajillas/nueva">
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Pajilla
+          </Link>
+        </Button>
+      </div>
+
+      {/* Pajillas List */}
+      <Suspense fallback={<PajillasLoadingSkeleton />}>
+        <PajillasList page={page} />
+      </Suspense>
+    </main>
   )
 }
 

@@ -8,28 +8,34 @@ import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
-export default function OrdersPage() {
-  return (
-      <main className="container mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestión de Órdenes</h1>
-            <p className="text-muted-foreground mt-2">Administra todas las órdenes de tus clientes</p>
-          </div>
-          <Button asChild>
-            <Link href="/ordenes/nueva">
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Orden
-            </Link>
-          </Button>
-        </div>
+interface OrdersPageProps {
+  searchParams: { page?: string }
+}
 
-        {/* Orders List */}
-        <Suspense fallback={<OrdersLoadingSkeleton />}>
-          <OrdersList />
-        </Suspense>
-      </main>
+export default function OrdersPage({ searchParams }: OrdersPageProps) {
+  const page = Math.max(1, Number(searchParams.page) || 1)
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Gestión de Órdenes</h1>
+          <p className="text-muted-foreground mt-2">Administra todas las órdenes de tus clientes</p>
+        </div>
+        <Button asChild>
+          <Link href="/ordenes/nueva">
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Orden
+          </Link>
+        </Button>
+      </div>
+
+      {/* Orders List */}
+      <Suspense fallback={<OrdersLoadingSkeleton />}>
+        <OrdersList page={page} />
+      </Suspense>
+    </main>
   )
 }
 

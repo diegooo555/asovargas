@@ -6,23 +6,36 @@ import { Search, Edit, Tag, Syringe } from "lucide-react"
 import { createServerClient } from "@/lib/supabase/server"
 import Link from "next/link"
 import { DeletePajillaButton } from "@/components/pajillas/delete-pajilla-button"
+import { PaginationControls } from "@/components/ui/pagination-controls"
 
-export async function PajillasList() {
+const PAGE_SIZE = 10
+
+interface PajillasListProps {
+  page?: number
+}
+
+export async function PajillasList({ page = 1 }: PajillasListProps) {
   const supabase = createServerClient()
 
   if (!supabase) {
     return <div>Error: Supabase no configurado</div>
   }
 
-  const { data: pajillas, error } = await supabase
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  const { data: pajillas, error, count } = await supabase
     .from("pajillas")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
+    .range(from, to)
 
   if (error) {
     console.error("Error fetching pajillas:", error)
     return <div>Error al cargar pajillas</div>
   }
+
+  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   return (
     <Card>
@@ -81,6 +94,8 @@ export async function PajillasList() {
                 </div>
               </div>
             ))}
+
+            <PaginationControls currentPage={page} totalPages={totalPages} />
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">

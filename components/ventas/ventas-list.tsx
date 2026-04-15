@@ -5,26 +5,39 @@ import { ShoppingBag, Eye, Search, Calendar, User, Banknote, ArrowRightLeft, Cre
 import { createServerClient } from "@/lib/supabase/server"
 import Link from "next/link"
 import type { SaleType } from "@/lib/types"
+import { PaginationControls } from "@/components/ui/pagination-controls"
 
-export async function VentasList() {
+const PAGE_SIZE = 10
+
+interface VentasListProps {
+  page?: number
+}
+
+export async function VentasList({ page = 1 }: VentasListProps) {
   const supabase = createServerClient()
 
   if (!supabase) {
     return <div>Error: Supabase no configurado</div>
   }
 
-  const { data: ventas, error } = await supabase
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  const { data: ventas, error, count } = await supabase
     .from("buys")
     .select(`
       *,
       clients (name, document, phone)
-    `)
+    `, { count: "exact" })
     .order("created_at", { ascending: false })
+    .range(from, to)
 
   if (error) {
     console.error("Error fetching ventas:", error)
     return <div>Error al cargar ventas</div>
   }
+
+  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   return (
     <Card>
@@ -58,7 +71,7 @@ export async function VentasList() {
                         const typeConfig: Record<string, { label: string; className: string; icon: typeof CreditCard }> = {
                           contado: { label: "Contado", className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", icon: Banknote },
                           transferencia: { label: "Transferencia", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400", icon: ArrowRightLeft },
-                          credito: { label: "Cr\u00e9dito", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", icon: CreditCard },
+                          credito: { label: "Crédito", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", icon: CreditCard },
                         }
                         const config = typeConfig[venta.sale_type] || typeConfig.contado
                         const Icon = config.icon
@@ -101,6 +114,8 @@ export async function VentasList() {
                 </div>
               </div>
             ))}
+
+            <PaginationControls currentPage={page} totalPages={totalPages} />
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">

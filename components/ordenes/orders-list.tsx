@@ -5,20 +5,36 @@ import { Input } from "@/components/ui/input"
 import { ShoppingCart, Eye, Search, Calendar } from "lucide-react"
 import { createServerClient } from "@/lib/supabase/server"
 import Link from "next/link"
+import { PaginationControls } from "@/components/ui/pagination-controls"
 
-export async function OrdersList() {
+const PAGE_SIZE = 10
+
+interface OrdersListProps {
+  page?: number
+}
+
+export async function OrdersList({ page = 1 }: OrdersListProps) {
   const supabase = createServerClient()
 
   if (!supabase) {
     return <div>Error: Supabase no configurado</div>
   }
 
-  const { data: orders, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false })
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  const { data: orders, error, count } = await supabase
+    .from("orders")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to)
 
   if (error) {
     console.error("Error fetching orders:", error)
     return <div>Error al cargar compras</div>
   }
+
+  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -104,6 +120,8 @@ export async function OrdersList() {
                 </div>
               </div>
             ))}
+
+            <PaginationControls currentPage={page} totalPages={totalPages} />
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
