@@ -9,11 +9,12 @@ import Link from "next/link"
 export const dynamic = "force-dynamic"
 
 interface VentasPageProps {
-  searchParams: { page?: string }
+  searchParams: { page?: string; saleType?: "contado" | "transferencia" | "credito" }
 }
 
 export default function VentasPage({ searchParams }: VentasPageProps) {
   const page = Math.max(1, Number(searchParams.page) || 1)
+  const saleType = searchParams.saleType
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -33,7 +34,7 @@ export default function VentasPage({ searchParams }: VentasPageProps) {
 
       {/* Sales List */}
       <Suspense fallback={<VentasLoadingSkeleton />}>
-        <VentasList page={page} />
+        <VentasList page={page} saleType={saleType} />
       </Suspense>
     </main>
   )

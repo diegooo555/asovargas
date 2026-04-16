@@ -9,11 +9,20 @@ import { PaginationControls } from "@/components/ui/pagination-controls"
 
 const PAGE_SIZE = 10
 
+type PaymentFilter = "contado" | "transferencia" | "credito"
+
+const PAYMENT_FILTERS: { value: PaymentFilter; label: string; icon: typeof CreditCard; activeClass: string }[] = [
+  { value: "contado",       label: "Contado",       icon: Banknote,       activeClass: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
+  { value: "transferencia", label: "Transferencia", icon: ArrowRightLeft, activeClass: "bg-blue-600 text-white border-blue-600 hover:bg-blue-700" },
+  { value: "credito",       label: "Crédito",       icon: CreditCard,     activeClass: "bg-amber-500 text-white border-amber-500 hover:bg-amber-600" },
+]
+
 interface VentasListProps {
   page?: number
+  saleType?: PaymentFilter
 }
 
-export async function VentasList({ page = 1 }: VentasListProps) {
+export async function VentasList({ page = 1, saleType }: VentasListProps) {
   const supabase = createServerClient()
 
   if (!supabase) {
@@ -23,14 +32,19 @@ export async function VentasList({ page = 1 }: VentasListProps) {
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
-  const { data: ventas, error, count } = await supabase
+  let query = supabase
     .from("buys")
     .select(`
       *,
       clients (name, document, phone)
     `, { count: "exact" })
     .order("created_at", { ascending: false })
-    .range(from, to)
+
+  if (saleType) {
+    query = query.eq("sale_type", saleType)
+  }
+
+  const { data: ventas, error, count } = await query.range(from, to)
 
   if (error) {
     console.error("Error fetching ventas:", error)
@@ -42,13 +56,34 @@ export async function VentasList({ page = 1 }: VentasListProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-xl font-semibold">Historial de Ventas</CardTitle>
-          <div className="flex items-center space-x-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Buscar ventas..." className="pl-10 w-64" />
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Payment-type filter pills */}
+            <Link
+              href="/dashboard/ventas"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+                !saleType
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-input text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              Todos
+            </Link>
+            {PAYMENT_FILTERS.map(({ value, label, icon: Icon, activeClass }) => (
+              <Link
+                key={value}
+                href={`/dashboard/ventas?saleType=${value}`}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+                  saleType === value
+                    ? activeClass
+                    : "border-input text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </CardHeader>
@@ -115,7 +150,11 @@ export async function VentasList({ page = 1 }: VentasListProps) {
               </div>
             ))}
 
-            <PaginationControls currentPage={page} totalPages={totalPages} />
+            <PaginationControls
+              currentPage={page}
+              totalPages={totalPages}
+              extraParams={saleType ? { saleType } : {}}
+            />
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
