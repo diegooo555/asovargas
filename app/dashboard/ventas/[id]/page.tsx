@@ -74,7 +74,7 @@ export default async function VentaDetailPage({ params }: VentaDetailPageProps) 
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Factura de Venta</h1>
+          <h1 className="text-3xl font-bold text-foreground">Remisión de Venta</h1>
           <p className="text-muted-foreground mt-1">Detalle de la venta {buy.buy_number}</p>
         </div>
       </div>

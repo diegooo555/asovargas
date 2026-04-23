@@ -12,9 +12,9 @@ const PAGE_SIZE = 10
 type PaymentFilter = "contado" | "transferencia" | "credito"
 
 const PAYMENT_FILTERS: { value: PaymentFilter; label: string; icon: typeof CreditCard; activeClass: string }[] = [
-  { value: "contado",       label: "Contado",       icon: Banknote,       activeClass: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
+  { value: "contado", label: "Contado", icon: Banknote, activeClass: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
   { value: "transferencia", label: "Transferencia", icon: ArrowRightLeft, activeClass: "bg-blue-600 text-white border-blue-600 hover:bg-blue-700" },
-  { value: "credito",       label: "Crédito",       icon: CreditCard,     activeClass: "bg-amber-500 text-white border-amber-500 hover:bg-amber-600" },
+  { value: "credito", label: "Crédito", icon: CreditCard, activeClass: "bg-amber-500 text-white border-amber-500 hover:bg-amber-600" },
 ]
 
 interface VentasListProps {
@@ -62,11 +62,10 @@ export async function VentasList({ page = 1, saleType }: VentasListProps) {
             {/* Payment-type filter pills */}
             <Link
               href="/dashboard/ventas"
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
-                !saleType
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-input text-muted-foreground hover:bg-muted"
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${!saleType
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-input text-muted-foreground hover:bg-muted"
+                }`}
             >
               Todos
             </Link>
@@ -74,11 +73,10 @@ export async function VentasList({ page = 1, saleType }: VentasListProps) {
               <Link
                 key={value}
                 href={`/dashboard/ventas?saleType=${value}`}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
-                  saleType === value
-                    ? activeClass
-                    : "border-input text-muted-foreground hover:bg-muted"
-                }`}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${saleType === value
+                  ? activeClass
+                  : "border-input text-muted-foreground hover:bg-muted"
+                  }`}
               >
                 <Icon className="h-3 w-3" />
                 {label}
@@ -90,7 +88,7 @@ export async function VentasList({ page = 1, saleType }: VentasListProps) {
       <CardContent>
         {ventas && ventas.length > 0 ? (
           <div className="space-y-4">
-            {ventas.map((venta: any) => (
+            {ventas.map((venta: any, index: number) => (
               <div
                 key={venta.id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -126,6 +124,7 @@ export async function VentasList({ page = 1, saleType }: VentasListProps) {
                     </div>
                     <div className="flex items-center space-x-4 mt-2">
                       <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                        <span className="text-green-700 font-bold">Remisión N°{index + 1 + (page - 1) * PAGE_SIZE}</span>
                         <Calendar className="h-3 w-3" />
                         <span>{new Date(venta.created_at).toLocaleDateString("es-CO", {
                           year: "numeric",
@@ -143,7 +142,7 @@ export async function VentasList({ page = 1, saleType }: VentasListProps) {
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/dashboard/ventas/${venta.id}`}>
                       <Eye className="h-4 w-4 mr-2" />
-                      Ver Factura
+                      Ver Remisión
                     </Link>
                   </Button>
                 </div>

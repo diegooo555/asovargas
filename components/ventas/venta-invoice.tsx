@@ -32,7 +32,7 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
       <div className="flex items-center space-x-3 mb-6 print:hidden">
         <Button onClick={handlePrint} size="lg" className="bg-primary">
           <Printer className="h-4 w-4 mr-2" />
-          Imprimir Factura
+          Imprimir Remisión
         </Button>
       </div>
 
@@ -48,7 +48,7 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
                 <p className="text-xs text-muted-foreground">Sistema de Gestión Empresarial</p>
               </div>
               <div className="text-right">
-                <h2 className="text-xl font-bold text-foreground">FACTURA DE VENTA</h2>
+                <h2 className="text-xl font-bold text-foreground">REMISION DE VENTA</h2>
                 <p className="text-sm font-mono font-semibold text-primary mt-1">{venta.buy_number}</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Fecha: {new Date(venta.created_at).toLocaleDateString("es-CO", {
