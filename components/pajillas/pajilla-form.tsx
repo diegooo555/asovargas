@@ -22,6 +22,7 @@ import { toast } from 'react-toastify';
 
 // Razas más importantes de Colombia
 const RAZAS_COLOMBIA = [
+  "Ayrshire",
   "Gyr",
   "Guzerá",
   "Nelore",
@@ -47,6 +48,7 @@ const RAZAS_COLOMBIA = [
   "Brangus",
   "Bradford",
   "Simbrah",
+
 ] as const;
 
 interface PajillaFormProps {
