@@ -99,7 +99,7 @@ export async function VentasList({ page = 1, saleType }: VentasListProps) {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
-                      <h3 className="font-semibold text-foreground">{venta.buy_number}</h3>
+                      <h3 className="font-bold text-green-700">{venta.buy_number}</h3>
                       {(() => {
                         const typeConfig: Record<string, { label: string; className: string; icon: typeof CreditCard }> = {
                           contado: { label: "Contado", className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", icon: Banknote },
@@ -124,7 +124,6 @@ export async function VentasList({ page = 1, saleType }: VentasListProps) {
                     </div>
                     <div className="flex items-center space-x-4 mt-2">
                       <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                        <span className="text-green-700 font-bold">Remisión N°{index + 1 + (page - 1) * PAGE_SIZE}</span>
                         <Calendar className="h-3 w-3" />
                         <span>{new Date(venta.created_at).toLocaleDateString("es-CO", {
                           year: "numeric",

@@ -136,15 +136,7 @@ export function VentaForm() {
   const pajillasTotal = pajillaItems.reduce((t, item) => t + item.quantity * item.unit_price, 0)
   const grandTotal = productsTotal + pajillasTotal
 
-  // --- Generate buy number ---
-  const generateBuyNumber = () => {
-    const now = new Date()
-    const y = now.getFullYear()
-    const m = String(now.getMonth() + 1).padStart(2, "0")
-    const d = String(now.getDate()).padStart(2, "0")
-    const t = String(now.getTime()).slice(-4)
-    return `VTA-${y}${m}${d}-${t}`
-  }
+
 
   // --- Submit ---
   const handleSubmit = async (e: React.FormEvent) => {
@@ -188,7 +180,6 @@ export function VentaForm() {
       // Create buy record
       const buyData = {
         client_id: selectedClientId,
-        buy_number: generateBuyNumber(),
         sale_type: saleType,
         total_amount: grandTotal,
       }
