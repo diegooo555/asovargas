@@ -37,27 +37,26 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
       </div>
 
       {/* Invoice Card */}
-      <Card className="print:shadow-none print:border-none">
-        <CardContent className="p-8 print:p-4">
+      <Card className="w-full max-w-none print:shadow-none print:border-none">
+        <CardContent className="p-2 print:p-4">
           {/* ===== INVOICE HEADER ===== */}
           <div className="border-b-2 border-primary pb-4 mb-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-bold text-primary print:text-2xl">ASOVARGAS</h1>
-                <p className="text-sm text-muted-foreground mt-1">Asociación de Productores</p>
-                <p className="text-xs text-muted-foreground">Sistema de Gestión Empresarial</p>
+            <div className="flex justify-center gap-6 items-center">
+              <div className="flex flex-col items-center gap-2">
+                <h1 className="text-5xl font-bold text-primary print:text-2xl">ASOVARGAS</h1>
+                <h2>ASOCIACIÓN AGROTURÍSTICA PANTANO DE VARGAS</h2>
               </div>
-              <div className="text-right">
-                <h2 className="text-xl font-bold text-foreground">REMISION DE VENTA</h2>
-                <p className="text-sm font-mono font-semibold text-primary mt-1">{venta.buy_number}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+              <img src="/asovargasLogo.png" />
+              <div className="text-right flex flex-col items-center gap-2 justify-center">
+                <h2 className="text-xl font-bold text-foreground">REMISION DE VENTA N°{venta.buy_number}</h2>
+                <p className="text-lg text-muted-foreground mt-1">
                   Fecha: {new Date(venta.created_at).toLocaleDateString("es-CO", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-lg text-muted-foreground">
                   Hora: {new Date(venta.created_at).toLocaleTimeString("es-CO", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -65,7 +64,7 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
                 </p>
                 <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
                   <SaleTypeIcon className="h-3.5 w-3.5" />
-                  {currentSaleType.label}
+                  <span className="text-lg">{currentSaleType.label}</span>
                 </div>
               </div>
             </div>
@@ -77,21 +76,21 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
               Datos del Comprador
             </h3>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-              <div className="flex">
-                <span className="text-sm text-muted-foreground w-24">Nombre:</span>
-                <span className="text-sm font-medium">{venta.client?.name || "—"}</span>
+              <div className="flex justify-between">
+                <span className="text-xl text-muted-foreground w-24 font-bold">Nombre:</span>
+                <span className="text-xl font-medium">{venta.client?.name || "—"}</span>
               </div>
-              <div className="flex">
-                <span className="text-sm text-muted-foreground w-24">Documento:</span>
-                <span className="text-sm font-medium">{venta.client?.document || "—"}</span>
+              <div className="flex justify-between">
+                <span className="text-xl text-muted-foreground w-24 font-bold">Documento:</span>
+                <span className="text-xl font-medium">{venta.client?.document || "—"}</span>
               </div>
-              <div className="flex">
-                <span className="text-sm text-muted-foreground w-24">Teléfono:</span>
-                <span className="text-sm font-medium">{venta.client?.phone || "—"}</span>
+              <div className="flex justify-between">
+                <span className="text-xl text-muted-foreground w-24 font-bold">Teléfono:</span>
+                <span className="text-xl font-medium">{venta.client?.phone || "—"}</span>
               </div>
-              <div className="flex">
-                <span className="text-sm text-muted-foreground w-24">Dirección:</span>
-                <span className="text-sm font-medium">{venta.client?.address || "—"}</span>
+              <div className="flex justify-between">
+                <span className="text-xl text-muted-foreground w-24 font-bold">Dirección:</span>
+                <span className="text-xl font-medium">{venta.client?.address || "—"}</span>
               </div>
             </div>
           </div>
@@ -106,22 +105,22 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b-2 border-foreground/20">
-                    <th className="text-left py-2 font-semibold">#</th>
-                    <th className="text-left py-2 font-semibold">Producto</th>
-                    <th className="text-left py-2 font-semibold">Empresa</th>
-                    <th className="text-right py-2 font-semibold">Cant.</th>
-                    <th className="text-right py-2 font-semibold">Precio Unit.</th>
-                    <th className="text-right py-2 font-semibold">Total</th>
+                    <th className="text-xl text-left py-2 font-bold">#</th>
+                    <th className="text-xl text-left py-2 font-bold">Producto</th>
+                    <th className="text-xl text-left py-2 font-bold">Empresa</th>
+                    <th className="text-xl text-right py-2 font-bold">Cant.</th>
+                    <th className="text-xl text-right py-2 font-bold">Precio Unit.</th>
+                    <th className="text-xl text-right py-2 font-bold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {venta.buy_items.map((item, idx) => (
                     <tr key={item.id} className="border-b border-muted">
-                      <td className="py-2 text-muted-foreground">{idx + 1}</td>
-                      <td className="py-2 font-medium">{item.product?.name || "Producto eliminado"}</td>
-                      <td className="py-2 text-muted-foreground">{item.product?.company || "—"}</td>
-                      <td className="py-2 text-right">{item.quantity}</td>
-                      <td className="py-2 text-right">
+                      <td className="text-lg font-medium py-2 text-muted-foreground">{idx + 1}</td>
+                      <td className="text-lg font-medium py-2">{item.product?.name || "Producto eliminado"}</td>
+                      <td className="text-lg font-medium py-2 text-muted-foreground">{item.product?.company || "—"}</td>
+                      <td className="text-lg font-medium py-2 text-right">{item.quantity}</td>
+                      <td className="text-lg font-medium py-2 text-right">
                         ${item.unit_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-2 text-right font-medium">

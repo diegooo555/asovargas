@@ -65,7 +65,7 @@ export default async function VentaDetailPage({ params }: VentaDetailPageProps) 
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="w-full max-w-none px-6 py-8">
       <div className="flex items-center space-x-4 mb-8 print:hidden">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/dashboard/ventas">
