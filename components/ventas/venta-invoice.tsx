@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Printer, Download, Package, Syringe, CreditCard, Banknote, ArrowRightLeft } from "lucide-react"
+import { Printer, Package, Syringe, CreditCard, Banknote, ArrowRightLeft } from "lucide-react"
 import type { BuyWithItems, SaleType } from "@/lib/types"
 
 interface VentaInvoiceProps {
@@ -27,220 +27,235 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
   const SaleTypeIcon = currentSaleType.icon
 
   return (
-    <div>
-      {/* Print Button (hidden when printing) */}
-      <div className="flex items-center space-x-3 mb-6 print:hidden">
-        <Button onClick={handlePrint} size="lg" className="bg-primary">
+    <>
+      {/* Estilos de impresión globales */}
+      <style>{`
+        @media print {
+          @page {
+            margin: 10mm 12mm;
+            size: letter;
+          }
+          body * { visibility: hidden; }
+          #invoice-printable, #invoice-printable * { visibility: visible; }
+          #invoice-printable { position: absolute; left: 0; top: 0; width: 100%; }
+          .print\\:hidden { display: none !important; }
+        }
+      `}</style>
+
+      {/* Botón imprimir */}
+      <div className="flex items-center space-x-3 mb-4 print:hidden">
+        <Button onClick={handlePrint} size="sm" className="bg-primary">
           <Printer className="h-4 w-4 mr-2" />
           Imprimir Remisión
         </Button>
       </div>
 
-      {/* Invoice Card */}
-      <Card className="w-full max-w-none print:shadow-none print:border-none">
-        <CardContent className="p-2 print:p-4">
-          {/* ===== INVOICE HEADER ===== */}
-          <div className="border-b-2 border-primary pb-4 mb-4">
-            <div className="flex justify-center gap-6 items-center">
-              <div className="flex flex-col items-center gap-2">
-                <h1 className="text-5xl font-bold text-primary print:text-2xl">ASOVARGAS</h1>
-                <h2>ASOCIACIÓN AGROTURÍSTICA PANTANO DE VARGAS</h2>
+      {/* Contenido imprimible */}
+      <div id="invoice-printable">
+        <Card className="w-full max-w-none print:shadow-none print:border-none">
+          <CardContent className="p-3 print:p-2">
+
+            {/* ENCABEZADO — fila compacta */}
+            <div className="flex items-center justify-between border-b border-primary pb-2 mb-3">
+              {/* Logo + nombre */}
+              <div className="flex items-center gap-2">
+                <img src="/asovargasLogo.png" className="h-10 w-auto" alt="Logo Asovargas" />
+                <div>
+                  <p className="text-base font-bold text-primary leading-tight">ASOVARGAS</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    Asociación Agroturística Pantano de Vargas
+                  </p>
+                </div>
               </div>
-              <img src="/asovargasLogo.png" />
-              <div className="text-right flex flex-col items-center gap-2 justify-center">
-                <h2 className="text-xl font-bold text-foreground">REMISION DE VENTA N°{venta.buy_number}</h2>
-                <p className="text-lg text-muted-foreground mt-1">
-                  Fecha: {new Date(venta.created_at).toLocaleDateString("es-CO", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+
+              {/* Número, fecha y tipo de pago */}
+              <div className="text-right text-xs text-muted-foreground space-y-0.5">
+                <p className="text-sm font-bold text-foreground">
+                  REMISIÓN N° {venta.buy_number}
                 </p>
-                <p className="text-lg text-muted-foreground">
-                  Hora: {new Date(venta.created_at).toLocaleTimeString("es-CO", {
+                <p>
+                  {new Date(venta.created_at).toLocaleDateString("es-CO", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  —{" "}
+                  {new Date(venta.created_at).toLocaleTimeString("es-CO", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
                 </p>
-                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                  <SaleTypeIcon className="h-3.5 w-3.5" />
-                  <span className="text-lg">{currentSaleType.label}</span>
-                </div>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold">
+                  <SaleTypeIcon className="h-3 w-3" />
+                  {currentSaleType.label}
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* ===== CLIENT INFO ===== */}
-          <div className="bg-muted/30 rounded-lg p-4 mb-6 print:bg-gray-50">
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">
-              Datos del Comprador
-            </h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-              <div className="flex justify-between">
-                <span className="text-xl text-muted-foreground w-24 font-bold">Nombre:</span>
-                <span className="text-xl font-medium">{venta.client?.name || "—"}</span>
+            {/* DATOS DEL COMPRADOR — fila horizontal */}
+            <div className="grid grid-cols-4 gap-x-4 gap-y-0.5 text-[11px] bg-muted/30 rounded px-3 py-2 mb-3 print:bg-gray-50">
+              <div>
+                <span className="text-muted-foreground font-semibold">Nombre: </span>
+                <span className="font-medium">{venta.client?.name || "—"}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-xl text-muted-foreground w-24 font-bold">Documento:</span>
-                <span className="text-xl font-medium">{venta.client?.document || "—"}</span>
+              <div>
+                <span className="text-muted-foreground font-semibold">Documento: </span>
+                <span className="font-medium">{venta.client?.document || "—"}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-xl text-muted-foreground w-24 font-bold">Teléfono:</span>
-                <span className="text-xl font-medium">{venta.client?.phone || "—"}</span>
+              <div>
+                <span className="text-muted-foreground font-semibold">Teléfono: </span>
+                <span className="font-medium">{venta.client?.phone || "—"}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-xl text-muted-foreground w-24 font-bold">Dirección:</span>
-                <span className="text-xl font-medium">{venta.client?.address || "—"}</span>
+              <div>
+                <span className="text-muted-foreground font-semibold">Dirección: </span>
+                <span className="font-medium">{venta.client?.address || "—"}</span>
               </div>
             </div>
-          </div>
 
-          {/* ===== PRODUCTS TABLE ===== */}
-          {venta.buy_items && venta.buy_items.length > 0 && (
-            <div className="mb-4">
-              <h3 className="font-semibold text-sm flex items-center space-x-2 mb-3">
-                <Package className="h-4 w-4 text-primary" />
-                <span>Productos</span>
-              </h3>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-foreground/20">
-                    <th className="text-xl text-left py-2 font-bold">#</th>
-                    <th className="text-xl text-left py-2 font-bold">Producto</th>
-                    <th className="text-xl text-left py-2 font-bold">Empresa</th>
-                    <th className="text-xl text-right py-2 font-bold">Cant.</th>
-                    <th className="text-xl text-right py-2 font-bold">Precio Unit.</th>
-                    <th className="text-xl text-right py-2 font-bold">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {venta.buy_items.map((item, idx) => (
-                    <tr key={item.id} className="border-b border-muted">
-                      <td className="text-lg font-medium py-2 text-muted-foreground">{idx + 1}</td>
-                      <td className="text-lg font-medium py-2">{item.product?.name || "Producto eliminado"}</td>
-                      <td className="text-lg font-medium py-2 text-muted-foreground">{item.product?.company || "—"}</td>
-                      <td className="text-lg font-medium py-2 text-right">{item.quantity}</td>
-                      <td className="text-lg font-medium py-2 text-right">
-                        ${item.unit_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="py-2 text-right font-medium">
-                        ${item.total_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+            {/* TABLA PRODUCTOS */}
+            {venta.buy_items && venta.buy_items.length > 0 && (
+              <div className="mb-3">
+                <p className="text-[11px] font-semibold flex items-center gap-1 mb-1 text-muted-foreground uppercase tracking-wide">
+                  <Package className="h-3 w-3 text-primary" /> Productos
+                </p>
+                <table className="w-full text-[11px]">
+                  <thead>
+                    <tr className="border-b border-foreground/20">
+                      <th className="text-left py-1 font-semibold w-6">#</th>
+                      <th className="text-left py-1 font-semibold">Producto</th>
+                      <th className="text-left py-1 font-semibold">Empresa</th>
+                      <th className="text-right py-1 font-semibold w-12">Cant.</th>
+                      <th className="text-right py-1 font-semibold w-24">P. Unit.</th>
+                      <th className="text-right py-1 font-semibold w-24">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {venta.buy_items.map((item, idx) => (
+                      <tr key={item.id} className="border-b border-muted/50">
+                        <td className="py-0.5 text-muted-foreground">{idx + 1}</td>
+                        <td className="py-0.5 font-medium">{item.product?.name || "Producto eliminado"}</td>
+                        <td className="py-0.5 text-muted-foreground">{item.product?.company || "—"}</td>
+                        <td className="py-0.5 text-right">{item.quantity}</td>
+                        <td className="py-0.5 text-right">
+                          ${item.unit_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="py-0.5 text-right font-semibold">
+                          ${item.total_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={5} className="py-1 text-right text-muted-foreground">Subtotal productos:</td>
+                      <td className="py-1 text-right font-bold">
+                        ${productsTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-foreground/20">
-                    <td colSpan={5} className="py-2 text-right font-semibold">Subtotal Productos:</td>
-                    <td className="py-2 text-right font-bold">
-                      ${productsTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
+                  </tfoot>
+                </table>
+              </div>
+            )}
 
-          {/* ===== PAJILLAS TABLE ===== */}
-          {venta.buy_pajilla_items && venta.buy_pajilla_items.length > 0 && (
-            <div className="mb-4">
-              <h3 className="font-semibold text-sm flex items-center space-x-2 mb-3">
-                <Syringe className="h-4 w-4 text-primary" />
-                <span>Pajillas de Inseminación</span>
-              </h3>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-foreground/20">
-                    <th className="text-left py-2 font-semibold">#</th>
-                    <th className="text-left py-2 font-semibold">Toro</th>
-                    <th className="text-left py-2 font-semibold">Raza</th>
-                    <th className="text-left py-2 font-semibold">Empresa</th>
-                    <th className="text-right py-2 font-semibold">Cant.</th>
-                    <th className="text-right py-2 font-semibold">Precio Unit.</th>
-                    <th className="text-right py-2 font-semibold">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {venta.buy_pajilla_items.map((item, idx) => (
-                    <tr key={item.id} className="border-b border-muted">
-                      <td className="py-2 text-muted-foreground">{idx + 1}</td>
-                      <td className="py-2 font-medium">{item.pajilla?.bull_name || "Pajilla eliminada"}</td>
-                      <td className="py-2 text-muted-foreground">{item.pajilla?.breed || "—"}</td>
-                      <td className="py-2 text-muted-foreground">{item.pajilla?.company || "—"}</td>
-                      <td className="py-2 text-right">{item.quantity}</td>
-                      <td className="py-2 text-right">
-                        ${item.unit_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="py-2 text-right font-medium">
-                        ${item.total_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+            {/* TABLA PAJILLAS */}
+            {venta.buy_pajilla_items && venta.buy_pajilla_items.length > 0 && (
+              <div className="mb-3">
+                <p className="text-[11px] font-semibold flex items-center gap-1 mb-1 text-muted-foreground uppercase tracking-wide">
+                  <Syringe className="h-3 w-3 text-primary" /> Pajillas de Inseminación
+                </p>
+                <table className="w-full text-[11px]">
+                  <thead>
+                    <tr className="border-b border-foreground/20">
+                      <th className="text-left py-1 font-semibold w-6">#</th>
+                      <th className="text-left py-1 font-semibold">Toro</th>
+                      <th className="text-left py-1 font-semibold">Raza</th>
+                      <th className="text-left py-1 font-semibold">Empresa</th>
+                      <th className="text-right py-1 font-semibold w-12">Cant.</th>
+                      <th className="text-right py-1 font-semibold w-24">P. Unit.</th>
+                      <th className="text-right py-1 font-semibold w-24">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {venta.buy_pajilla_items.map((item, idx) => (
+                      <tr key={item.id} className="border-b border-muted/50">
+                        <td className="py-0.5 text-muted-foreground">{idx + 1}</td>
+                        <td className="py-0.5 font-medium">{item.pajilla?.bull_name || "Pajilla eliminada"}</td>
+                        <td className="py-0.5 text-muted-foreground">{item.pajilla?.breed || "—"}</td>
+                        <td className="py-0.5 text-muted-foreground">{item.pajilla?.company || "—"}</td>
+                        <td className="py-0.5 text-right">{item.quantity}</td>
+                        <td className="py-0.5 text-right">
+                          ${item.unit_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="py-0.5 text-right font-semibold">
+                          ${item.total_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={6} className="py-1 text-right text-muted-foreground">Subtotal pajillas:</td>
+                      <td className="py-1 text-right font-bold">
+                        ${pajillasTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-foreground/20">
-                    <td colSpan={6} className="py-2 text-right font-semibold">Subtotal Pajillas:</td>
-                    <td className="py-2 text-right font-bold">
-                      ${pajillasTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
+                  </tfoot>
+                </table>
+              </div>
+            )}
 
-          {/* ===== GRAND TOTAL ===== */}
-          <div className="border-t-2 border-primary/30 pt-4 mb-10">
-            <div className="flex justify-end">
-              <div className="w-72">
-                {venta.buy_items && venta.buy_items.length > 0 && venta.buy_pajilla_items && venta.buy_pajilla_items.length > 0 && (
+            {/* TOTAL */}
+            <div className="flex justify-end border-t border-primary/30 pt-2 mb-4">
+              <div className="w-60 text-[11px] space-y-0.5">
+                {venta.buy_items?.length > 0 && venta.buy_pajilla_items?.length > 0 && (
                   <>
-                    <div className="flex justify-between text-sm py-1">
-                      <span className="text-muted-foreground">Subtotal Productos:</span>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Subtotal productos:</span>
                       <span>${productsTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between text-sm py-1">
-                      <span className="text-muted-foreground">Subtotal Pajillas:</span>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Subtotal pajillas:</span>
                       <span>${pajillasTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}</span>
                     </div>
                   </>
                 )}
-                <div className="flex justify-between py-2 border-t-2 border-foreground mt-2">
-                  <span className="text-lg font-bold">TOTAL:</span>
-                  <span className="text-xl font-bold text-primary">
+                <div className="flex justify-between border-t border-foreground pt-1 font-bold text-sm">
+                  <span>TOTAL:</span>
+                  <span className="text-primary">
                     ${grandTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* ===== SIGNATURES ===== */}
-          <div className="grid grid-cols-2 gap-16 mt-16 pt-4">
-            <div className="text-center">
-              <div className="border-t-2 border-foreground pt-3 mx-8">
-                <p className="font-semibold text-sm">Firma del Vendedor</p>
-                <p className="text-xs text-muted-foreground mt-1">Nombre: ___________________</p>
-                <p className="text-xs text-muted-foreground mt-1">C.C.: ___________________</p>
+            {/* FIRMAS */}
+            <div className="grid grid-cols-2 gap-12 pt-4 border-t border-muted mt-2">
+              <div className="text-center">
+                <div className="border-t border-foreground pt-2 mx-4">
+                  <p className="text-[11px] font-semibold">Firma del Vendedor</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Nombre: ___________________</p>
+                  <p className="text-[10px] text-muted-foreground">C.C.: ___________________</p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="border-t border-foreground pt-2 mx-4">
+                  <p className="text-[11px] font-semibold">Firma del Comprador</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Nombre: {venta.client?.name || "___________________"}</p>
+                  <p className="text-[10px] text-muted-foreground">C.C.: {venta.client?.document || "___________________"}</p>
+                </div>
               </div>
             </div>
-            <div className="text-center">
-              <div className="border-t-2 border-foreground pt-3 mx-8">
-                <p className="font-semibold text-sm">Firma del Comprador</p>
-                <p className="text-xs text-muted-foreground mt-1">Nombre: {venta.client?.name || "___________________"}</p>
-                <p className="text-xs text-muted-foreground mt-1">C.C.: {venta.client?.document || "___________________"}</p>
-              </div>
-            </div>
-          </div>
 
-          {/* ===== FOOTER ===== */}
-          <div className="mt-12 pt-4 border-t text-center">
-            <p className="text-xs text-muted-foreground">
-              Gracias por su compra — ASOVARGAS © {new Date().getFullYear()}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            {/* PIE */}
+            <div className="mt-4 pt-2 border-t text-center">
+              <p className="text-[10px] text-muted-foreground">
+                Gracias por su compra — ASOVARGAS © {new Date().getFullYear()}
+              </p>
+            </div>
+
+          </CardContent>
+        </Card>
+      </div>
+    </>
   )
 }
