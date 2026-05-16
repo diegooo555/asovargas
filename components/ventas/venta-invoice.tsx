@@ -61,7 +61,7 @@ export function VentaInvoice({ venta }: VentaInvoiceProps) {
               <div className="flex items-center gap-2">
                 <img src="/asovargasLogo.png" className="h-10 w-auto" alt="Logo Asovargas" />
                 <div>
-                  <p className="text-base font-bold text-primary leading-tight">ASOVARGAS</p>
+                  <p className="text-base font-bold text-primary leading-tight">ASOVARGAS NIT 900851910</p>
                   <p className="text-[10px] text-muted-foreground leading-tight">
                     Asociación Agroturística Pantano de Vargas
                   </p>
