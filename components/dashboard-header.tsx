@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Package, Plus, BarChart3, Syringe, ShoppingBag } from "lucide-react"
+import { Package, Plus, BarChart3, Syringe, ShoppingBag, BarChart } from "lucide-react"
 import { MobileNav } from "@/components/mobile-nav"
 
 export function DashboardHeader() {
@@ -41,6 +41,9 @@ export function DashboardHeader() {
             </Link>
             <Link href="/dashboard/ventas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Ventas
+            </Link>
+            <Link href="/dashboard/estadisticas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Estadísticas
             </Link>
             <Link href="/dashboard/variables" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Variables

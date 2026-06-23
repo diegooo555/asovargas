@@ -85,6 +85,14 @@ export function MobileNav() {
             </Link>
 
             <Link
+              href="/dashboard/estadisticas"
+              className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors font-medium py-2"
+              onClick={() => setOpen(false)}
+            >
+              <BarChart className="h-5 w-5" />
+              <span>Estadísticas</span>
+            </Link>
+            <Link
             href="/dashboard/variables"
             className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors font-medium py-2">
               <Variable className="h-5 w-5"/>
