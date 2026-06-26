@@ -4,6 +4,7 @@ import {
   ProductionRecord,
   Variable,
   VariableFortnight,
+  Fortnight,
 } from "../types";
 
 // Check if Supabase environment variables are available
@@ -56,17 +57,86 @@ export async function getVariablesLiters(): Promise<Variable[] | null> {
 
 export async function getProductionHistory(
   userId: string,
+  fortnightId?: string,
 ): Promise<ProductionRecord[] | null> {
-  const { data, error } = await supabase!
+  let query = supabase!
     .from("production_records")
     .select("*")
     .eq("client_id", userId)
-    .order("production_datetime", { ascending: false });
+
+  if (fortnightId) {
+    query = query.eq("fortnight_id", fortnightId)
+  }
+
+  const { data, error } = await query.order("production_datetime", { ascending: false });
 
   if (error) {
     throw error;
   }
   return data;
+}
+
+export async function getCurrentFortnight(): Promise<Fortnight | null> {
+  const { data, error } = await supabase!
+    .from("fortnights")
+    .select("*")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function upsertFortnight(
+  fortnight: Partial<Fortnight> & { id?: string },
+): Promise<Fortnight> {
+  if (fortnight.id) {
+    const { data, error } = await supabase!
+      .from("fortnights")
+      .update({
+        start_date: fortnight.start_date,
+        end_date: fortnight.end_date,
+        price_liter_associate: fortnight.price_liter_associate,
+        price_liter_buyer: fortnight.price_liter_buyer,
+        sostenimiento_fee: fortnight.sostenimiento_fee,
+      })
+      .eq("id", fortnight.id)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  const { data, error } = await supabase!
+    .from("fortnights")
+    .insert({
+      start_date: fortnight.start_date,
+      end_date: fortnight.end_date,
+      price_liter_associate: fortnight.price_liter_associate,
+      price_liter_buyer: fortnight.price_liter_buyer,
+      sostenimiento_fee: fortnight.sostenimiento_fee,
+      is_active: true,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function finishFortnight(id: string): Promise<void> {
+  const { error } = await supabase!
+    .from("fortnights")
+    .update({ is_active: false })
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
 }
 
 export async function getVariablesFortnight(): Promise<

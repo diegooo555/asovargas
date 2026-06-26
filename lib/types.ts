@@ -78,6 +78,7 @@ export interface ProductionRecord {
   client_id: string
   liters: number
   production_datetime: string
+  fortnight_id?: string
   created_at: string
   updated_at: string
 }
@@ -104,6 +105,18 @@ export interface Client {
 
 export interface UserDetailsProps {
   userId: string
+}
+
+export interface Fortnight {
+  id: string
+  start_date: string
+  end_date: string
+  price_liter_associate: number
+  price_liter_buyer: number
+  sostenimiento_fee: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface Pajilla {

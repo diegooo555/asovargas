@@ -7,10 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase/client"
 import { toast } from "react-toastify"
+import { Fortnight } from "@/lib/types"
 
 interface AddProductionModalProps {
   clientId: string
   clientName: string
+  fortnight: Fortnight | null
   onProductionAdded?: () => void // callback para refrescar datos en el listado
 }
 
@@ -21,7 +23,7 @@ function getLocalDateTime() {
   return local.toISOString().slice(0, 16) // yyyy-MM-ddTHH:mm
 }
 
-export function AddProductionModal({ clientId, clientName, onProductionAdded }: AddProductionModalProps) {
+export function AddProductionModal({ clientId, clientName, fortnight, onProductionAdded }: AddProductionModalProps) {
   const [liters, setLiters] = useState("")
   const [production_datetime, setDate] = useState(getLocalDateTime())
   const [loading, setLoading] = useState(false)
@@ -35,6 +37,12 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
         throw new Error("Supabase client is not initialized");
       }
 
+      if (!fortnight) {
+        toast.error("No se puede crear un registro de producción hasta configurar una quincena actual")
+        setLoading(false)
+        return
+      }
+
       const utcISO = new Date(
         production_datetime.length === 16
           ? `${production_datetime}:00` // "YYYY-MM-DDTHH:mm:ss"
@@ -46,6 +54,7 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
           client_id: clientId,
           liters: Number(liters),
           production_datetime: utcISO,
+          fortnight_id: fortnight.id,
         },
       ])
 
@@ -69,7 +78,7 @@ export function AddProductionModal({ clientId, clientName, onProductionAdded }: 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" disabled={!fortnight}>
           Añadir Producción
         </Button>
       </DialogTrigger>

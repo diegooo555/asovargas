@@ -10,6 +10,11 @@ import { supabase } from "@/lib/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AddProductionModal } from "./production-modal"
 import { toast } from "sonner"
+import { Fortnight } from "@/lib/types"
+
+interface UsersListProps {
+  fortnight: Fortnight | null
+}
 
 interface Client {
   client_id: string
@@ -18,20 +23,20 @@ interface Client {
   total_liters?: number
 }
 
-export function UsersList() {
+export function UsersList({ fortnight }: UsersListProps) {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     fetchClients()
-  }, [])
+  }, [fortnight?.id])
 
   type SupabaseClientRow = {
     client_id: string
     name: string
     type_client: "associate" | "buyer"
-    production_records?: { liters?: number }[]
+    production_records?: { liters?: number; fortnight_id?: string }[]
   }
 
   const fetchClients = async () => {
@@ -46,7 +51,7 @@ export function UsersList() {
           client_id,
           name,
           type_client,
-          production_records (liters)
+          production_records (liters, fortnight_id)
         `)
         .order("created_at", { ascending: false })
 
@@ -55,7 +60,9 @@ export function UsersList() {
       const processedClients =
         (data as SupabaseClientRow[] | null)?.map((client) => {
           const totalLiters =
-            client.production_records?.reduce((sum: number, record: any) => sum + (record.liters || 0), 0) || 0
+            client.production_records
+              ?.filter((r) => fortnight && r.fortnight_id === fortnight.id)
+              .reduce((sum: number, record: any) => sum + (record.liters || 0), 0) || 0
           return {
             client_id: client.client_id,
             name: client.name,
@@ -146,7 +153,7 @@ export function UsersList() {
                   <TableCell className="text-left font-medium">{client.total_liters?.toFixed(2) || "0.00"} L</TableCell>
                   <TableCell className="text-right">
                     <div onClick={(e) => e.stopPropagation()}>
-                      <AddProductionModal clientId={client.client_id} clientName={client.name} onProductionAdded={fetchClients} />
+                      <AddProductionModal clientId={client.client_id} clientName={client.name} fortnight={fortnight} onProductionAdded={fetchClients} />
                     </div>
                   </TableCell>
                 </TableRow>

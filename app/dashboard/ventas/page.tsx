@@ -1,20 +1,29 @@
 import { Suspense } from "react"
 import { VentasList } from "@/components/ventas/ventas-list"
+import { ClientSalesSelector } from "@/components/ventas/client-sales-selector"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Plus } from "lucide-react"
 import Link from "next/link"
+import { createServerClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
 
 interface VentasPageProps {
-  searchParams: { page?: string; saleType?: "contado" | "transferencia" | "credito" }
+  searchParams: { page?: string; saleType?: "contado" | "transferencia" | "credito"; clientId?: string }
 }
 
-export default function VentasPage({ searchParams }: VentasPageProps) {
+export default async function VentasPage({ searchParams }: VentasPageProps) {
   const page = Math.max(1, Number(searchParams.page) || 1)
   const saleType = searchParams.saleType
+  const clientId = searchParams.clientId
+
+  const supabase = createServerClient()
+  const { data: clients } = await supabase!
+    .from("clients")
+    .select("client_id, name, document")
+    .order("name")
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -24,17 +33,20 @@ export default function VentasPage({ searchParams }: VentasPageProps) {
           <h1 className="text-3xl font-bold text-foreground">Gestión de Ventas</h1>
           <p className="text-muted-foreground mt-2">Administra todas las ventas y genera facturas</p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/ventas/nueva">
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Venta
-          </Link>
-        </Button>
+        <div className="flex items-center gap-4">
+          <ClientSalesSelector clients={clients || []} />
+          <Button asChild>
+            <Link href="/dashboard/ventas/nueva">
+              <Plus className="h-4 w-4 mr-2" />
+              Nueva Venta
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Sales List */}
       <Suspense fallback={<VentasLoadingSkeleton />}>
-        <VentasList page={page} saleType={saleType} />
+        <VentasList page={page} saleType={saleType} clientId={clientId} />
       </Suspense>
     </main>
   )

@@ -1,0 +1,1 @@
+En el acopio si la lleva en la tarde pasa al siguiente dia.
