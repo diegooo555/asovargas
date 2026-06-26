@@ -52,10 +52,10 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
 
   const totalLiters = records.reduce((sum, r) => sum + r.liters, 0)
   const pricePerLiter = client?.type_client === "associate"
-    ? variables?.[0]?.amount
-    : variables?.[1]?.amount
+    ? currentFortnight?.price_liter_associate
+    : currentFortnight?.price_liter_buyer
   const sostenimientoFee = client?.type_client === "associate"
-    ? variables?.[2]?.amount
+    ? currentFortnight?.sostenimiento_fee
     : 0
 
   return (

@@ -82,26 +82,23 @@ CREATE OR REPLACE TRIGGER trigger_debts_updated_at
 CREATE OR REPLACE FUNCTION log_debt_changes()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Insert when a new debt is created
   IF TG_OP = 'INSERT' THEN
     INSERT INTO debt_records (debt_id, action, amount, note, created_at)
     VALUES (NEW.debt_id, 'created', NEW.total, 'Debt created', NOW());
-
     RETURN NEW;
   END IF;
 
-  -- Insert when a debt is updated
   IF TG_OP = 'UPDATE' THEN
-    -- Detect status change
-    IF NEW.status <> OLD.status THEN
+    IF NEW.status <> OLD.status AND NEW.status = 'paid' THEN
       INSERT INTO debt_records (debt_id, action, amount, note, created_at)
-      VALUES (NEW.debt_id, NEW.status, NEW.total, 'Status changed', NOW());
+      VALUES (NEW.debt_id, 'payment', NEW.total, 'Payment applied', NOW());
+    ELSIF NEW.status <> OLD.status AND NEW.status = 'cancelled' THEN
+      INSERT INTO debt_records (debt_id, action, amount, note, created_at)
+      VALUES (NEW.debt_id, 'cancelled', NEW.total, 'Debt cancelled', NOW());
     ELSE
-      -- Generic update
       INSERT INTO debt_records (debt_id, action, amount, note, created_at)
       VALUES (NEW.debt_id, 'update', NEW.total, 'Debt updated', NOW());
     END IF;
-
     RETURN NEW;
   END IF;
 
