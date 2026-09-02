@@ -1,5 +1,6 @@
 import { DashboardHeader } from "@/components/dashboard-header"
 import { OrderDetails } from "@/components/ordenes/order-details"
+import { OrderInvoice } from "@/components/ordenes/order-invoice"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -48,6 +49,10 @@ export default async function OrderPage({ params }: OrderPageProps) {
         order_items (
           *,
           product:products (*)
+        ),
+        order_pajilla_items (
+          *,
+          pajilla:pajillas (*)
         )
       `)
       .eq("id", id)
@@ -81,6 +86,11 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
           {/* Order Details */}
           <OrderDetails order={order} />
+
+          {/* Invoice / Receipt */}
+          <div className="mt-8">
+            <OrderInvoice order={order} />
+          </div>
         </main>
     )
   } catch (error) {

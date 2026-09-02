@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Package, Calendar, User, Mail, Edit } from "lucide-react"
+import { Package, Calendar, Syringe } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
 
 interface OrderDetailsProps {
@@ -39,11 +38,14 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     }
   }
 
+  const productsTotal = order.order_items?.reduce((t, item) => t + (item.total_price || 0), 0) || 0
+  const pajillasTotal = order.order_pajilla_items?.reduce((t, item) => t + (item.total_price || 0), 0) || 0
+  const totalItems = (order.order_items?.length || 0) + (order.order_pajilla_items?.length || 0)
+
   return (
     <div className="space-y-6">
       {/* Order Header */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         <Card>
           <CardHeader className="flex flex-row items-center space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Estado de la Orden</CardTitle>
@@ -66,22 +68,21 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             <div className="text-2xl font-bold">
               ${order.total_amount?.toLocaleString("es-CO", { minimumFractionDigits: 2 }) || "0.00"}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">{order.order_items?.length || 0} producto(s)</p>
+            <p className="text-xs text-muted-foreground mt-2">{totalItems} item(s) en total</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Order Items */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Productos de la Orden</CardTitle>
-          <Button variant="outline" size="sm">
-            <Edit className="h-4 w-4 mr-2" />
-            Editar Orden
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {order.order_items && order.order_items.length > 0 ? (
+      {/* Order Items - Products */}
+      {order.order_items && order.order_items.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Package className="h-5 w-5 text-primary" />
+              <span>Productos de la Orden</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               {order.order_items.map((item) => (
                 <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -108,22 +109,94 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                 </div>
               ))}
 
-              {/* Order Summary */}
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">Total:</span>
-                  <span className="text-2xl font-bold text-primary">
-                    ${order.total_amount?.toLocaleString("es-CO", { minimumFractionDigits: 2 }) || "0.00"}
+                  <span className="text-sm font-semibold text-muted-foreground">Subtotal Productos:</span>
+                  <span className="text-lg font-bold">
+                    ${productsTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No hay productos en esta orden</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Order Items - Pajillas */}
+      {order.order_pajilla_items && order.order_pajilla_items.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Syringe className="h-5 w-5 text-primary" />
+              <span>Pajillas de la Orden</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {order.order_pajilla_items.map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                      <Syringe className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">{item.pajilla?.bull_name || "Pajilla eliminada"}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {item.pajilla?.breed} — {item.pajilla?.company}
+                      </p>
+                      <div className="flex items-center space-x-4 mt-1">
+                        <span className="text-sm text-muted-foreground">Canastilla #{item.pajilla?.canastilla_number || "—"}</span>
+                        <span className="text-sm text-muted-foreground">Cantidad: {item.quantity}</span>
+                        <span className="text-sm text-muted-foreground">
+                          Precio: ${item.unit_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-foreground">
+                      ${item.total_price.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-muted-foreground">Subtotal Pajillas:</span>
+                  <span className="text-lg font-bold">
+                    ${pajillasTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
             </div>
-          )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Total Summary */}
+      <Card className="border-2 border-primary/20">
+        <CardContent className="pt-6">
+          <div className="space-y-2">
+            {order.order_items?.length > 0 && order.order_pajilla_items?.length > 0 && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal Productos:</span>
+                  <span>${productsTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal Pajillas:</span>
+                  <span>${pajillasTotal.toLocaleString("es-CO", { minimumFractionDigits: 2 })}</span>
+                </div>
+              </>
+            )}
+            <div className="border-t pt-3 flex justify-between items-center">
+              <span className="text-lg font-semibold">Total de la Orden:</span>
+              <span className="text-2xl font-bold text-primary">
+                ${order.total_amount?.toLocaleString("es-CO", { minimumFractionDigits: 2 }) || "0.00"}
+              </span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -57,6 +57,8 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
   const sostenimientoFee = client?.type_client === "associate"
     ? currentFortnight?.sostenimiento_fee
     : 0
+  const totalPago = pricePerLiter ? totalLiters * pricePerLiter : 0
+  const totalNeto = totalPago - (sostenimientoFee || 0)
 
   return (
     <div className="space-y-6">
@@ -126,6 +128,39 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
         />
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardItem
+          title="Total a Pagar"
+          icon={<DollarSign className="h-4 w-4 text-green-600" />}
+          children={
+            <div className="text-2xl font-bold text-green-600">
+              {totalPago
+                ? new Intl.NumberFormat("es-CO", {
+                    style: "currency",
+                    currency: "COP",
+                    minimumFractionDigits: 0,
+                  }).format(totalPago)
+                : "$0"}
+            </div>
+          }
+        />
+        <CardItem
+          title="Total Neto (descontando sostenimiento)"
+          icon={<DollarSign className="h-4 w-4 text-blue-600" />}
+          children={
+            <div className="text-2xl font-bold text-blue-600">
+              {totalNeto
+                ? new Intl.NumberFormat("es-CO", {
+                    style: "currency",
+                    currency: "COP",
+                    minimumFractionDigits: 0,
+                  }).format(totalNeto)
+                : "$0"}
+            </div>
+          }
+        />
+      </div>
+
       {/* Production History Table */}
       {!currentFortnight ? (
         <div className="text-center py-8">
@@ -156,16 +191,7 @@ export function UserProductionHistory({ userId }: UserProductionHistoryProps) {
               {records.map((record) => (
                 <TableRow key={record.production_record_id}>
                   <TableCell className="font-medium">
-                    {new Date(record.production_datetime).toLocaleString("es-ES", {
-                      weekday: "short",
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour12: true,
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      timeZone: "America/Bogota",
-                    })}
+                    {new Date(record.production_datetime).toLocaleString("es-CO")}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

@@ -35,6 +35,18 @@ export interface OrderItem {
 
 export interface OrderWithItems extends Order {
   order_items: OrderItem[]
+  order_pajilla_items: OrderPajillaItem[]
+}
+
+export interface OrderPajillaItem {
+  id: string
+  order_id: string
+  pajilla_id: string
+  quantity: number
+  unit_price: number
+  total_price: number
+  created_at: string
+  pajilla?: Pajilla
 }
 
 export interface User {
@@ -127,6 +139,7 @@ export interface Pajilla {
   purchase_price: number
   sale_price: number
   quantity: number
+  canastilla_number: number
   created_at: string
   updated_at: string
 }

@@ -31,7 +31,8 @@ const RAZAS_COLOMBIA = [
   "Jersey",
   "Pardo Suizo",
   "Simmental",
-  "Angus",
+  "Angus Negro",
+  "Angus Rojo",
   "Brahman Rojo",
   "Brahman Blanco",
   "Senepol",
@@ -48,6 +49,7 @@ const RAZAS_COLOMBIA = [
   "Brangus",
   "Bradford",
   "Simbrah",
+  "Simmental x Holstein Rojo"
 
 ] as const;
 
@@ -65,6 +67,7 @@ export function PajillaForm({ pajilla }: PajillaFormProps) {
     purchase_price: pajilla?.purchase_price?.toString() || "",
     sale_price: pajilla?.sale_price?.toString() || "",
     quantity: pajilla?.quantity?.toString() || "0",
+    canastilla_number: pajilla?.canastilla_number?.toString() || "1",
   })
 
   const purchasePrice = Number.parseFloat(formData.purchase_price) || 0
@@ -85,6 +88,7 @@ export function PajillaForm({ pajilla }: PajillaFormProps) {
         purchase_price: parseFloat(formData.purchase_price),
         sale_price: parseFloat(formData.sale_price),
         quantity: parseInt(formData.quantity) || 0,
+        canastilla_number: parseInt(formData.canastilla_number) || 1,
       };
 
       // Validación básica
@@ -218,6 +222,20 @@ export function PajillaForm({ pajilla }: PajillaFormProps) {
             value={formData.quantity}
             onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
             placeholder="0"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="canastilla_number">Número de Canastilla *</Label>
+          <Input
+            id="canastilla_number"
+            type="number"
+            step="1"
+            min="1"
+            value={formData.canastilla_number}
+            onChange={(e) => setFormData({ ...formData, canastilla_number: e.target.value })}
+            placeholder="1"
+            required
           />
         </div>
       </div>
