@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { VentasList } from "@/components/ventas/ventas-list"
 import { ClientSalesSelector } from "@/components/ventas/client-sales-selector"
+import { QuincenaFilter } from "@/components/ventas/quincena-filter"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -11,13 +12,23 @@ import { createServerClient } from "@/lib/supabase/server"
 export const dynamic = "force-dynamic"
 
 interface VentasPageProps {
-  searchParams: { page?: string; saleType?: "contado" | "transferencia" | "credito"; clientId?: string }
+  searchParams: {
+    page?: string
+    saleType?: "contado" | "transferencia" | "credito"
+    clientId?: string
+    year?: string
+    month?: string
+    quincena?: string
+  }
 }
 
 export default async function VentasPage({ searchParams }: VentasPageProps) {
   const page = Math.max(1, Number(searchParams.page) || 1)
   const saleType = searchParams.saleType
   const clientId = searchParams.clientId
+  const year = searchParams.year
+  const month = searchParams.month
+  const quincena = searchParams.quincena
 
   const supabase = createServerClient()
   const { data: clients } = await supabase!
@@ -44,9 +55,21 @@ export default async function VentasPage({ searchParams }: VentasPageProps) {
         </div>
       </div>
 
+      {/* Quincena filter */}
+      <div className="mb-6">
+        <QuincenaFilter currentYear={new Date().getFullYear()} />
+      </div>
+
       {/* Sales List */}
       <Suspense fallback={<VentasLoadingSkeleton />}>
-        <VentasList page={page} saleType={saleType} clientId={clientId} />
+        <VentasList
+          page={page}
+          saleType={saleType}
+          clientId={clientId}
+          year={year}
+          month={month}
+          quincena={quincena}
+        />
       </Suspense>
     </main>
   )

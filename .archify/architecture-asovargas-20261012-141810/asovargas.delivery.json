@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4ee68387-52f5-40b6-8304-f0f02a00720c",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/home/maradona/Documents/softwares/asovargas/.archify/architecture-asovargas-20261012-141810/candidate.json",
+  "output": "/home/maradona/Documents/softwares/asovargas/.archify/architecture-asovargas-20261012-141810/asovargas.html",
+  "specification": {
+    "sha256": "000b5d06215d61496538605ec07f83e5b4fedededd6af86e42e6e1d2880bbb6e",
+    "bytes": 41648
+  },
+  "artifact": {
+    "sha256": "d0d83fca3fd14d01869a6d9cadd15dfbfec9d9cb60a1408fd2fcb576dd62821e",
+    "bytes": 786328
+  }
+}

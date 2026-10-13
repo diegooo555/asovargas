@@ -16,13 +16,63 @@ const PAYMENT_FILTERS: { value: PaymentFilter; label: string; icon: typeof Credi
   { value: "credito", label: "Crédito", icon: CreditCard, activeClass: "bg-amber-500 text-white border-amber-500 hover:bg-amber-600" },
 ]
 
+const MONTH_NAMES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+]
+
+interface QuincenaRange {
+  start: string
+  endExclusive: string
+  year: number
+  month: number
+  quincena: 1 | 2
+}
+
+interface SalesTotals {
+  total: number
+  contado: number
+  transferencia: number
+  credito: number
+}
+
+const pad = (n: number) => String(n).padStart(2, "0")
+
+/**
+ * Builds the [start, end) date boundaries for a fortnight in Colombia time.
+ * Quincena 1 spans days 1–15; quincena 2 spans day 16 through the end of month.
+ * The end is exclusive so the boundary day belongs to exactly one fortnight.
+ * Colombia has no DST, so a fixed -05:00 offset is safe.
+ */
+function getQuincenaRange(year: number, month: number, quincena: 1 | 2): QuincenaRange {
+  const startDay = quincena === 1 ? 1 : 16
+  const lastDay = new Date(year, month, 0).getDate()
+  const start = `${year}-${pad(month)}-${pad(startDay)}T00:00:00-05:00`
+  const next = new Date(year, month - 1, lastDay + 1)
+  const endExclusive = `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}T00:00:00-05:00`
+  return { start, endExclusive, year, month, quincena }
+}
+
+function parseQuincenaRange(year?: string, month?: string, quincena?: string): QuincenaRange | null {
+  if (!month) return null
+  const y = Number(year) || new Date().getFullYear()
+  const m = Number(month)
+  const q = Number(quincena || 1)
+  if (!Number.isInteger(m) || m < 1 || m > 12) return null
+  if (q !== 1 && q !== 2) return null
+  return getQuincenaRange(y, m, q)
+}
+
 interface VentasListProps {
   page?: number
   saleType?: PaymentFilter
   clientId?: string
+  year?: string
+  month?: string
+  quincena?: string
 }
 
-export async function VentasList({ page = 1, saleType, clientId }: VentasListProps) {
+export async function VentasList({ page = 1, saleType, clientId, year, month, quincena }: VentasListProps) {
   const supabase = createServerClient()
 
   if (!supabase) {
@@ -32,6 +82,8 @@ export async function VentasList({ page = 1, saleType, clientId }: VentasListPro
   if (clientId && supabase) {
     return <ClientSalesSummary clientId={clientId} />
   }
+
+  const range = parseQuincenaRange(year, month, quincena)
 
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
@@ -48,6 +100,10 @@ export async function VentasList({ page = 1, saleType, clientId }: VentasListPro
     query = query.eq("sale_type", saleType)
   }
 
+  if (range) {
+    query = query.gte("created_at", range.start).lt("created_at", range.endExclusive)
+  }
+
   const { data: ventas, error, count } = await query.range(from, to)
 
   if (error) {
@@ -55,43 +111,88 @@ export async function VentasList({ page = 1, saleType, clientId }: VentasListPro
     return <div>Error al cargar ventas</div>
   }
 
+  // Totals always cover the whole fortnight (all payment types), not just the
+  // current page, so the breakdown stays meaningful regardless of pagination.
+  let totals: SalesTotals | null = null
+  if (range) {
+    const { data: rows } = await supabase
+      .from("buys")
+      .select("sale_type, total_amount")
+      .gte("created_at", range.start)
+      .lt("created_at", range.endExclusive)
+
+    totals = { total: 0, contado: 0, transferencia: 0, credito: 0 }
+    for (const row of rows || []) {
+      const amount = row.total_amount || 0
+      totals.total += amount
+      if (row.sale_type === "contado") totals.contado += amount
+      else if (row.sale_type === "transferencia") totals.transferencia += amount
+      else if (row.sale_type === "credito") totals.credito += amount
+    }
+  }
+
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
+  const periodParams: Record<string, string> = range
+    ? { year: String(range.year), month: String(range.month), quincena: String(range.quincena) }
+    : {}
+
+  const filterHref = (extra?: Record<string, string>) => {
+    const params = new URLSearchParams(periodParams)
+    if (extra) Object.entries(extra).forEach(([k, v]) => params.set(k, v))
+    const qs = params.toString()
+    return `/dashboard/ventas${qs ? `?${qs}` : ""}`
+  }
+
+  const periodLabel = range
+    ? `${range.quincena === 1 ? "1ra quincena (1–15)" : "2da quincena (16–fin de mes)"} de ${MONTH_NAMES[range.month - 1]} ${range.year}`
+    : ""
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-xl font-semibold">Historial de Ventas</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/dashboard/ventas"
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${!saleType
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-input text-muted-foreground hover:bg-muted"
-                }`}
-            >
-              Todos
-            </Link>
-            {PAYMENT_FILTERS.map(({ value, label, icon: Icon, activeClass }) => (
+    <div className="space-y-6">
+      {totals && range && (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Mostrando las ventas de la <span className="font-medium text-foreground">{periodLabel}</span>
+          </p>
+          <SalesTotalsCards totals={totals} />
+        </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-xl font-semibold">Historial de Ventas</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
               <Link
-                key={value}
-                href={`/dashboard/ventas?saleType=${value}`}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${saleType === value
-                  ? activeClass
+                href={filterHref()}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${!saleType
+                  ? "bg-primary text-primary-foreground border-primary"
                   : "border-input text-muted-foreground hover:bg-muted"
                   }`}
               >
-                <Icon className="h-3 w-3" />
-                {label}
+                Todos
               </Link>
-            ))}
+              {PAYMENT_FILTERS.map(({ value, label, icon: Icon, activeClass }) => (
+                <Link
+                  key={value}
+                  href={filterHref({ saleType: value })}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${saleType === value
+                    ? activeClass
+                    : "border-input text-muted-foreground hover:bg-muted"
+                    }`}
+                >
+                  <Icon className="h-3 w-3" />
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {ventas && ventas.length > 0 ? (
-          <div className="space-y-4">
-            {ventas.map((venta: any) => (
+        </CardHeader>
+        <CardContent>
+          {ventas && ventas.length > 0 ? (
+            <div className="space-y-4">
+              {ventas.map((venta: any) => (
               <div
                 key={venta.id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -154,14 +255,20 @@ export async function VentasList({ page = 1, saleType, clientId }: VentasListPro
             <PaginationControls
               currentPage={page}
               totalPages={totalPages}
-              extraParams={saleType ? { saleType } : {}}
+              extraParams={{ ...periodParams, ...(saleType ? { saleType } : {}) }}
             />
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <ShoppingBag className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium mb-2">No hay ventas registradas</h3>
-            <p className="text-sm mb-4">Comienza registrando tu primera venta</p>
+            <h3 className="text-lg font-medium mb-2">
+              {range ? "No hay ventas en esta quincena" : "No hay ventas registradas"}
+            </h3>
+            <p className="text-sm mb-4">
+              {range
+                ? "Prueba con otra quincena o registra una venta"
+                : "Comienza registrando tu primera venta"}
+            </p>
             <Button asChild>
               <Link href="/dashboard/ventas/nueva">
                 <ShoppingBag className="h-4 w-4 mr-2" />
@@ -171,7 +278,37 @@ export async function VentasList({ page = 1, saleType, clientId }: VentasListPro
           </div>
         )}
       </CardContent>
-    </Card>
+      </Card>
+    </div>
+  )
+}
+
+function SalesTotalsCards({ totals }: { totals: SalesTotals }) {
+  const cards = [
+    { label: "Total vendido", value: totals.total, icon: TrendingUp, className: "text-foreground" },
+    { label: "Contado", value: totals.contado, icon: Banknote, className: "text-green-600" },
+    { label: "Transferencia", value: totals.transferencia, icon: ArrowRightLeft, className: "text-blue-600" },
+    { label: "Crédito", value: totals.credito, icon: CreditCard, className: "text-amber-600" },
+  ]
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map(({ label, value, icon: Icon, className }) => (
+        <Card key={label}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+              <Icon className="w-4 h-4" />
+              {label}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className={`text-2xl font-bold ${className}`}>
+              ${value.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
+            </p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   )
 }
 
