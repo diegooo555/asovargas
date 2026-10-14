@@ -180,7 +180,7 @@ implementation_plan.md        Plan original del módulo de ventas
 | `/dashboard/pajillas` | Listado por canastilla | `pajillas/page.tsx` (servidor) | `PajillasList` (servidor), `DeletePajillaButton` (cliente) |
 | `/dashboard/pajillas/nueva` | Alta | `pajillas/nueva/page.tsx` | `PajillaForm` (cliente) |
 | `/dashboard/pajillas/[id]/editar` | Edición | `pajillas/[id]/editar/page.tsx` (servidor) | `PajillaForm` |
-| `/dashboard/ventas?page=&saleType=&clientId=&year=&month=&quincena=` | Historial, resumen por cliente o por quincena | `ventas/page.tsx` (servidor) | `VentasList` (servidor), `ClientSalesSelector` y `QuincenaFilter` (cliente) |
+| `/dashboard/ventas?page=&saleType=&clientId=&year=&month=&period=` | Historial, resumen por cliente o por período | `ventas/page.tsx` (servidor) | `VentasList` (servidor), `ClientSalesSelector`, `PeriodFilter` y `DownloadRemisionesPDF` (cliente) |
 | `/dashboard/ventas/nueva` | Alta | `ventas/nueva/page.tsx` | `VentaForm` (cliente) |
 | `/dashboard/ventas/[id]` | Remisión imprimible | `ventas/[id]/page.tsx` (servidor) | `VentaInvoice` (cliente) |
 | `/dashboard/usuarios` | Clientes y totales de deuda | `usuarios/page.tsx` | `UsersStats`, `UsersList` (cliente) |
@@ -384,9 +384,11 @@ El detalle (`/dashboard/ordenes/[id]`) incluye un recibo imprimible (`OrderInvoi
 
 El historial (`components/ventas/ventas-list.tsx`) pagina de 10 en 10 y filtra por `saleType`. Si la URL trae `clientId`, en lugar del historial muestra un resumen de ese cliente: totales por tipo de pago, productos comprados e historial. Ese resumen agrega solo `buy_items`; las pajillas vendidas no aparecen en la tabla de productos.
 
-**Clasificación por quincena.** `QuincenaFilter` (`components/ventas/quincena-filter.tsx`) escribe `year`, `month` y `quincena` en la URL. Con `month` y `quincena` presentes, `VentasList` filtra `buys.created_at` al rango de la quincena y muestra, arriba del historial, los totales de la quincena completa por tipo de pago (total, contado, transferencia y crédito). La división es por calendario y no usa la tabla `fortnights`: **1ra quincena = días 1–15; 2da quincena = día 16 hasta el fin de mes**. Los límites se calculan con offset fijo `-05:00` (Colombia no tiene horario de verano) y el fin del rango es exclusivo, para que ningún día caiga en dos quincenas. Los totales se suman sobre **toda la quincena**, no sobre la página paginada; si además hay `saleType`, el desglose de totales sigue mostrando todos los tipos. El filtro de `saleType` no se combina con `clientId` (el resumen por cliente tiene prioridad).
+**Filtro por período.** `PeriodFilter` (`components/ventas/period-filter.tsx`) escribe `year`, `month` y `period` en la URL. `period` acepta cuatro valores: `month` (mes completo), `q1` (1ra quincena, días 1–15), `q2` (2da quincena, día 16 hasta el fin de mes) y `year` (año completo). Con un `period` válido, `VentasList` filtra `buys.created_at` al rango y muestra, arriba del historial, los totales del período completo por tipo de pago (total, contado, transferencia y crédito). La división es por calendario y no usa la tabla `fortnights`. Toda la lógica de rangos, etiquetas y slugs vive en `lib/periods.ts` (`resolvePeriodRange`, `periodSlug`) y la comparten el listado y el PDF. Los límites se calculan con offset fijo `-05:00` (Colombia no tiene horario de verano) y el fin del rango es exclusivo, para que ningún día caiga en dos períodos. Los totales se suman sobre **todo el período**, no sobre la página paginada; si además hay `saleType`, el desglose de totales sigue mostrando todos los tipos. El filtro de `saleType` no se combina con `clientId` (el resumen por cliente tiene prioridad); cuando hay `clientId`, el filtro de período y el botón de descarga se ocultan.
 
-Este filtro es solo de reporte: no crea deuda, no liquida nada y no cambia ninguna fila de `buys`.
+**Descarga de remisiones en PDF.** `DownloadRemisionesPDF` (`components/ventas/download-remisiones-pdf.tsx`) toma el mismo período de la URL, trae las `buys` del rango con sus `clients`, `buy_items`+`products` y `buy_pajilla_items`+`pajillas`, y arma un PDF con `jspdf` + `jspdf-autotable`: **una remisión por página**, con el diseño de `VentaInvoice` (encabezado, datos del comprador, tablas de productos/pajillas, total y firmas) más el pie "Página i de N". Se guarda como `remisiones-<periodo>.pdf` (slug de `lib/periods.ts`).
+
+Este filtro y la descarga son solo de reporte: no crean deuda, no liquidan nada y no cambian ninguna fila de `buys`.
 
 ### Clientes y deudas
 

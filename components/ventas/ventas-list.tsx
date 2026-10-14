@@ -5,6 +5,7 @@ import { createServerClient } from "@/lib/supabase/server"
 import Link from "next/link"
 import type { SaleType } from "@/lib/types"
 import { PaginationControls } from "@/components/ui/pagination-controls"
+import { resolvePeriodRange } from "@/lib/periods"
 
 const PAGE_SIZE = 10
 
@@ -16,51 +17,11 @@ const PAYMENT_FILTERS: { value: PaymentFilter; label: string; icon: typeof Credi
   { value: "credito", label: "Crédito", icon: CreditCard, activeClass: "bg-amber-500 text-white border-amber-500 hover:bg-amber-600" },
 ]
 
-const MONTH_NAMES = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-]
-
-interface QuincenaRange {
-  start: string
-  endExclusive: string
-  year: number
-  month: number
-  quincena: 1 | 2
-}
-
 interface SalesTotals {
   total: number
   contado: number
   transferencia: number
   credito: number
-}
-
-const pad = (n: number) => String(n).padStart(2, "0")
-
-/**
- * Builds the [start, end) date boundaries for a fortnight in Colombia time.
- * Quincena 1 spans days 1–15; quincena 2 spans day 16 through the end of month.
- * The end is exclusive so the boundary day belongs to exactly one fortnight.
- * Colombia has no DST, so a fixed -05:00 offset is safe.
- */
-function getQuincenaRange(year: number, month: number, quincena: 1 | 2): QuincenaRange {
-  const startDay = quincena === 1 ? 1 : 16
-  const lastDay = new Date(year, month, 0).getDate()
-  const start = `${year}-${pad(month)}-${pad(startDay)}T00:00:00-05:00`
-  const next = new Date(year, month - 1, lastDay + 1)
-  const endExclusive = `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}T00:00:00-05:00`
-  return { start, endExclusive, year, month, quincena }
-}
-
-function parseQuincenaRange(year?: string, month?: string, quincena?: string): QuincenaRange | null {
-  if (!month) return null
-  const y = Number(year) || new Date().getFullYear()
-  const m = Number(month)
-  const q = Number(quincena || 1)
-  if (!Number.isInteger(m) || m < 1 || m > 12) return null
-  if (q !== 1 && q !== 2) return null
-  return getQuincenaRange(y, m, q)
 }
 
 interface VentasListProps {
@@ -69,10 +30,10 @@ interface VentasListProps {
   clientId?: string
   year?: string
   month?: string
-  quincena?: string
+  period?: string
 }
 
-export async function VentasList({ page = 1, saleType, clientId, year, month, quincena }: VentasListProps) {
+export async function VentasList({ page = 1, saleType, clientId, year, month, period }: VentasListProps) {
   const supabase = createServerClient()
 
   if (!supabase) {
@@ -83,7 +44,7 @@ export async function VentasList({ page = 1, saleType, clientId, year, month, qu
     return <ClientSalesSummary clientId={clientId} />
   }
 
-  const range = parseQuincenaRange(year, month, quincena)
+  const range = resolvePeriodRange(year, month, period)
 
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
@@ -134,7 +95,11 @@ export async function VentasList({ page = 1, saleType, clientId, year, month, qu
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   const periodParams: Record<string, string> = range
-    ? { year: String(range.year), month: String(range.month), quincena: String(range.quincena) }
+    ? {
+        year: String(range.year),
+        period: range.scope,
+        ...(range.month ? { month: String(range.month) } : {}),
+      }
     : {}
 
   const filterHref = (extra?: Record<string, string>) => {
@@ -144,16 +109,14 @@ export async function VentasList({ page = 1, saleType, clientId, year, month, qu
     return `/dashboard/ventas${qs ? `?${qs}` : ""}`
   }
 
-  const periodLabel = range
-    ? `${range.quincena === 1 ? "1ra quincena (1–15)" : "2da quincena (16–fin de mes)"} de ${MONTH_NAMES[range.month - 1]} ${range.year}`
-    : ""
+  const periodLabel = range?.label ?? ""
 
   return (
     <div className="space-y-6">
       {totals && range && (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Mostrando las ventas de la <span className="font-medium text-foreground">{periodLabel}</span>
+            Mostrando ventas del período: <span className="font-medium text-foreground">{periodLabel}</span>
           </p>
           <SalesTotalsCards totals={totals} />
         </div>

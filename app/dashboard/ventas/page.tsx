@@ -1,7 +1,8 @@
 import { Suspense } from "react"
 import { VentasList } from "@/components/ventas/ventas-list"
 import { ClientSalesSelector } from "@/components/ventas/client-sales-selector"
-import { QuincenaFilter } from "@/components/ventas/quincena-filter"
+import { PeriodFilter } from "@/components/ventas/period-filter"
+import { DownloadRemisionesPDF } from "@/components/ventas/download-remisiones-pdf"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,7 +19,7 @@ interface VentasPageProps {
     clientId?: string
     year?: string
     month?: string
-    quincena?: string
+    period?: string
   }
 }
 
@@ -28,7 +29,7 @@ export default async function VentasPage({ searchParams }: VentasPageProps) {
   const clientId = searchParams.clientId
   const year = searchParams.year
   const month = searchParams.month
-  const quincena = searchParams.quincena
+  const period = searchParams.period
 
   const supabase = createServerClient()
   const { data: clients } = await supabase!
@@ -55,10 +56,13 @@ export default async function VentasPage({ searchParams }: VentasPageProps) {
         </div>
       </div>
 
-      {/* Quincena filter */}
-      <div className="mb-6">
-        <QuincenaFilter currentYear={new Date().getFullYear()} />
-      </div>
+      {/* Period filter + bulk remisión download (not used in the per-client view) */}
+      {!clientId && (
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <PeriodFilter currentYear={new Date().getFullYear()} />
+          <DownloadRemisionesPDF currentYear={new Date().getFullYear()} />
+        </div>
+      )}
 
       {/* Sales List */}
       <Suspense fallback={<VentasLoadingSkeleton />}>
@@ -68,7 +72,7 @@ export default async function VentasPage({ searchParams }: VentasPageProps) {
           clientId={clientId}
           year={year}
           month={month}
-          quincena={quincena}
+          period={period}
         />
       </Suspense>
     </main>
