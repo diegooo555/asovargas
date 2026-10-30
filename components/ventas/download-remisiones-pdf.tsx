@@ -3,12 +3,42 @@
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Download, FileText } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { CalendarRange, Download, FileText } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import { toast } from "react-toastify"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
-import { resolvePeriodRange, periodSlug, type PeriodRange } from "@/lib/periods"
+import {
+  PERIOD_OPTIONS,
+  resolvePeriodRange,
+  resolvePeriodSpan,
+  periodSpanSlug,
+  slugify,
+  type PeriodScope,
+} from "@/lib/periods"
+
+const MONTHS = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+]
 
 const PRIMARY: [number, number, number] = [22, 101, 52] // Tailwind green-800
 const GRAY: [number, number, number] = [110, 110, 110]
@@ -246,22 +276,72 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
   })
 }
 
-interface DownloadRemisionesPDFProps {
-  currentYear: number
+interface ClientOption {
+  client_id: string
+  name: string
+  document: string | null
 }
 
-export function DownloadRemisionesPDF({ currentYear }: DownloadRemisionesPDFProps) {
+interface PeriodPickerValue {
+  year: string
+  month: string
+  scope: PeriodScope
+}
+
+interface DownloadRemisionesPDFProps {
+  currentYear: number
+  clients?: ClientOption[]
+}
+
+export function DownloadRemisionesPDF({ currentYear, clients = [] }: DownloadRemisionesPDFProps) {
   const searchParams = useSearchParams()
   const [isGenerating, setIsGenerating] = useState(false)
+  const [clientId, setClientId] = useState("")
 
-  const range = resolvePeriodRange(
+  // Seed the pickers from the on-screen period filter so "download what I see"
+  // stays the default, while still letting the user widen the range here.
+  const initialRange = resolvePeriodRange(
     searchParams.get("year") || String(currentYear),
     searchParams.get("month"),
     searchParams.get("period"),
   )
+  const initialPicker: PeriodPickerValue = {
+    year: String(initialRange?.year ?? currentYear),
+    month: String(initialRange?.month ?? new Date().getMonth() + 1),
+    scope: initialRange?.scope ?? "month",
+  }
+
+  const [from, setFrom] = useState<PeriodPickerValue>(initialPicker)
+  const [to, setTo] = useState<PeriodPickerValue>(initialPicker)
+
+  const span = resolvePeriodSpan(
+    from.year,
+    from.month,
+    from.scope,
+    to.year,
+    to.month,
+    to.scope,
+  )
+
+  const years = Array.from(
+    new Set([
+      currentYear,
+      currentYear - 1,
+      currentYear - 2,
+      Number(from.year),
+      Number(to.year),
+    ]),
+  )
+    .filter((y) => Number.isFinite(y))
+    .sort((a, b) => b - a)
+
+  const selectedClient = clients.find((c) => c.client_id === clientId)
 
   const handleDownload = async () => {
-    if (!range) return
+    if (!span) {
+      toast.error("El período final debe ser igual o posterior al inicial")
+      return
+    }
     if (!supabase) {
       toast.error("Supabase no está configurado")
       return
@@ -269,12 +349,15 @@ export function DownloadRemisionesPDF({ currentYear }: DownloadRemisionesPDFProp
 
     setIsGenerating(true)
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("buys")
         .select(`*, clients (*)`)
-        .gte("created_at", range.start)
-        .lt("created_at", range.endExclusive)
-        .order("created_at", { ascending: true })
+        .gte("created_at", span.start)
+        .lt("created_at", span.endExclusive)
+
+      if (clientId) query = query.eq("client_id", clientId)
+
+      const { data, error } = await query.order("created_at", { ascending: true })
 
       if (error) throw error
       const buys = (data || []) as any[]
@@ -315,6 +398,9 @@ export function DownloadRemisionesPDF({ currentYear }: DownloadRemisionesPDFProp
         })
       })
 
+      const footerLabel = selectedClient ? `${span.label} · ${selectedClient.name}` : span.label
+      const fileSlug = `${selectedClient ? `${slugify(selectedClient.name)}-` : ""}${periodSpanSlug(span)}`
+
       const pageCount = pdf.getNumberOfPages()
       const pageWidth = pdf.internal.pageSize.width
       const pageHeight = pdf.internal.pageSize.height
@@ -324,10 +410,10 @@ export function DownloadRemisionesPDF({ currentYear }: DownloadRemisionesPDFProp
         pdf.setFontSize(8)
         pdf.setTextColor(150, 150, 150)
         pdf.text(`Página ${i} de ${pageCount}`, MARGIN, pageHeight - 5)
-        pdf.text(truncate(pdf, range.label, 120), pageWidth - MARGIN, pageHeight - 5, { align: "right" })
+        pdf.text(truncate(pdf, footerLabel, 120), pageWidth - MARGIN, pageHeight - 5, { align: "right" })
       }
 
-      pdf.save(`remisiones-${periodSlug(range)}.pdf`)
+      pdf.save(`remisiones-${fileSlug}.pdf`)
       toast.success(`${buys.length} remisión(es) descargada(s)`)
     } catch (error) {
       console.error("Error al generar el PDF de remisiones:", error)
@@ -338,27 +424,124 @@ export function DownloadRemisionesPDF({ currentYear }: DownloadRemisionesPDFProp
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
-      <Button
-        onClick={handleDownload}
-        disabled={!range || isGenerating}
-        className="bg-primary"
-      >
-        {isGenerating ? (
-          <>
-            <FileText className="h-4 w-4 mr-2 animate-spin" />
-            Generando PDF...
-          </>
-        ) : (
-          <>
-            <Download className="h-4 w-4 mr-2" />
-            Descargar remisiones
-          </>
-        )}
-      </Button>
-      <span className="text-xs text-muted-foreground">
-        {range ? `PDF de: ${range.label}` : "Elige un período para descargar"}
+    <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4">
+      <div className="flex items-center gap-2 mr-1 self-center text-muted-foreground">
+        <CalendarRange className="h-4 w-4" />
+        <span className="text-sm font-medium">Descargar remisiones</span>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <Label className="text-xs text-muted-foreground">Cliente</Label>
+        <Select
+          value={clientId || "__all__"}
+          onValueChange={(v) => setClientId(v === "__all__" ? "" : v)}
+        >
+          <SelectTrigger className="w-[220px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">Todos los clientes</SelectItem>
+            {clients.map((c) => (
+              <SelectItem key={c.client_id} value={c.client_id}>
+                {c.document ? `${c.name} · ${c.document}` : c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <PeriodPicker title="Desde" value={from} years={years} onChange={setFrom} />
+      <PeriodPicker title="Hasta" value={to} years={years} onChange={setTo} />
+
+      <div className="flex flex-col gap-1">
+        <span className="invisible text-xs">Acción</span>
+        <Button onClick={handleDownload} disabled={!span || isGenerating} className="bg-primary">
+          {isGenerating ? (
+            <>
+              <FileText className="h-4 w-4 mr-2 animate-spin" />
+              Generando PDF...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4 mr-2" />
+              Descargar
+            </>
+          )}
+        </Button>
+      </div>
+
+      <span className="w-full text-xs text-muted-foreground">
+        {span
+          ? `PDF de: ${span.label}${selectedClient ? ` · ${selectedClient.name}` : " · todos los clientes"}`
+          : "El período final debe ser igual o posterior al inicial"}
       </span>
+    </div>
+  )
+}
+
+function PeriodPicker({
+  title,
+  value,
+  years,
+  onChange,
+}: {
+  title: string
+  value: PeriodPickerValue
+  years: number[]
+  onChange: (next: PeriodPickerValue) => void
+}) {
+  const needsMonth = value.scope !== "year"
+
+  return (
+    <div className="flex flex-col gap-1">
+      <Label className="text-xs text-muted-foreground">{title}</Label>
+      <div className="flex gap-2">
+        <Select value={value.year} onValueChange={(year) => onChange({ ...value, year })}>
+          <SelectTrigger className="w-[90px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={needsMonth ? value.month : ""}
+          onValueChange={(month) => onChange({ ...value, month })}
+          disabled={!needsMonth}
+        >
+          <SelectTrigger className="w-[125px]">
+            <SelectValue placeholder="—" />
+          </SelectTrigger>
+          <SelectContent>
+            {MONTHS.map((label, i) => (
+              <SelectItem key={label} value={String(i + 1)}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={value.scope}
+          onValueChange={(scope) => onChange({ ...value, scope: scope as PeriodScope })}
+        >
+          <SelectTrigger className="w-[210px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PERIOD_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   )
 }

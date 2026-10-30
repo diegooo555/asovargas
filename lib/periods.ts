@@ -111,11 +111,61 @@ export function resolvePeriodRange(
 }
 
 /** Slug suitable for a file name, e.g. "2da-quincena-de-agosto-2026". */
-export function periodSlug(range: PeriodRange): string {
-  return range.label
+export function slugify(text: string): string {
+  return text
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
+}
+
+/** Slug suitable for a file name, e.g. "2da-quincena-de-agosto-2026". */
+export function periodSlug(range: PeriodRange): string {
+  return slugify(range.label)
+}
+
+export interface PeriodSpan {
+  /** Inclusive start: midnight of the first day of the "from" period. */
+  start: string
+  /** Exclusive end: midnight right after the last day of the "to" period. */
+  endExclusive: string
+  label: string
+  from: PeriodRange
+  to: PeriodRange
+}
+
+/**
+ * Builds a [start, end) span from a "from" period to a "to" period. The span
+ * runs from the beginning of the first period to the end of the last one, so
+ * selecting the same period twice yields that single period. Returns null when
+ * either period is invalid or the resulting span is empty/backwards.
+ */
+export function resolvePeriodSpan(
+  fromYear?: string | null,
+  fromMonth?: string | null,
+  fromPeriod?: string | null,
+  toYear?: string | null,
+  toMonth?: string | null,
+  toPeriod?: string | null,
+): PeriodSpan | null {
+  const from = resolvePeriodRange(fromYear, fromMonth, fromPeriod)
+  const to = resolvePeriodRange(toYear, toMonth, toPeriod)
+  if (!from || !to) return null
+  // The last period must end after the first one starts, otherwise the span is
+  // empty (e.g. "2da quincena" → "1ra quincena" of the same month).
+  if (from.start >= to.endExclusive) return null
+
+  const same = from.start === to.start && from.endExclusive === to.endExclusive
+  return {
+    start: from.start,
+    endExclusive: to.endExclusive,
+    label: same ? from.label : `${from.label} — ${to.label}`,
+    from,
+    to,
+  }
+}
+
+export function periodSpanSlug(span: PeriodSpan): string {
+  return slugify(span.label)
 }

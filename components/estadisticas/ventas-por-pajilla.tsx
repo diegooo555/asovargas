@@ -12,25 +12,26 @@ export async function VentasPorPajilla() {
 
   const { data: items, error } = await supabase
     .from("buy_pajilla_items")
-    .select("quantity, total_price, pajilla:pajillas(bull_name, company, breed)")
+    .select("quantity, total_price, pajilla:pajillas(id, bull_name, company, breed)")
 
   if (error) {
     console.error("Error fetching pajilla items:", error)
     return <div>Error al cargar datos de pajillas</div>
   }
 
-  const pajillaMap = new Map<string, { bull_name: string; company: string; breed: string; quantity: number; revenue: number }>()
+  const pajillaMap = new Map<string, { id: string; bull_name: string; company: string; breed: string; quantity: number; revenue: number }>()
 
   for (const item of items || []) {
-    const pajilla = item.pajilla as { bull_name: string; company: string; breed: string } | null
+    const pajilla = item.pajilla as unknown as { id: string; bull_name: string; company: string; breed: string } | null
     if (!pajilla) continue
-    const key = pajilla.bull_name
+    const key = pajilla.id
     const existing = pajillaMap.get(key)
     if (existing) {
       existing.quantity += item.quantity || 0
       existing.revenue += item.total_price || 0
     } else {
       pajillaMap.set(key, {
+        id: pajilla.id,
         bull_name: pajilla.bull_name,
         company: pajilla.company,
         breed: pajilla.breed,
@@ -67,7 +68,7 @@ export async function VentasPorPajilla() {
         <PajillaSalesChart data={pajillas} />
         <div className="mt-6 space-y-2">
           {pajillas.map((p, i) => (
-            <div key={p.bull_name} className="flex items-center justify-between py-2 border-b last:border-0">
+            <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground w-6">{i + 1}.</span>
                 <div>

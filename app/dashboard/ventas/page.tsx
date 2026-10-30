@@ -58,9 +58,12 @@ export default async function VentasPage({ searchParams }: VentasPageProps) {
 
       {/* Period filter + bulk remisión download (not used in the per-client view) */}
       {!clientId && (
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-3">
           <PeriodFilter currentYear={new Date().getFullYear()} />
-          <DownloadRemisionesPDF currentYear={new Date().getFullYear()} />
+          <DownloadRemisionesPDF
+            currentYear={new Date().getFullYear()}
+            clients={clients || []}
+          />
         </div>
       )}
 

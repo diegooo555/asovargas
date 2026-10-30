@@ -421,12 +421,14 @@ Lo que **no** ocurre al finalizar: no se generan liquidaciones ni facturas, no s
 |---|---|
 | Ventas totales / Ingresos totales | Conteo y suma de `buys.total_amount`, sin filtro de fecha ni de tipo de pago |
 | Productos / Pajillas vendidos | Suma de `quantity` en `buy_items` / `buy_pajilla_items` |
+| Inventario productos / pajillas | Suma de `purchase_price × quantity` del stock actual |
+| Valor total inventario | Inventario de productos + inventario de pajillas, a costo |
+| Valor de venta potencial | Suma de `sale_price × quantity` del stock actual |
 | Egresos órdenes | Suma de `orders.total_amount` con `status = 'completed'` |
-| Inversión pajillas | Suma de `purchase_price × quantity` del inventario actual de pajillas |
-| Balance | Ingresos − (egresos de órdenes + inversión en pajillas) |
-| Ventas por producto / pajilla | Agrupadas por **nombre**; gráfica con los 10 primeros |
+| Balance | Ingresos − egresos de órdenes |
+| Ventas por producto / pajilla | Agrupadas por `id` (no por nombre); gráfica con los 10 primeros |
 
-Las pajillas compradas mediante una orden completada cuentan en "Egresos órdenes" y, mientras sigan en stock, también en "Inversión pajillas".
+El inventario es un activo, no un egreso: el costo de las pajillas ya está incluido en "Egresos órdenes" cuando se compran mediante una orden completada, por lo que no se vuelve a restar en el balance.
 
 ### Impresión y PDF
 

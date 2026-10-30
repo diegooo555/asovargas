@@ -12,25 +12,26 @@ export async function VentasPorProducto() {
 
   const { data: items, error } = await supabase
     .from("buy_items")
-    .select("quantity, total_price, product:products(name, company)")
+    .select("quantity, total_price, product:products(id, name, company)")
 
   if (error) {
     console.error("Error fetching buy items:", error)
     return <div>Error al cargar datos de ventas</div>
   }
 
-  const productMap = new Map<string, { name: string; company: string; quantity: number; revenue: number }>()
+  const productMap = new Map<string, { id: string; name: string; company: string; quantity: number; revenue: number }>()
 
   for (const item of items || []) {
-    const product = item.product as { name: string; company: string } | null
+    const product = item.product as unknown as { id: string; name: string; company: string } | null
     if (!product) continue
-    const key = product.name
+    const key = product.id
     const existing = productMap.get(key)
     if (existing) {
       existing.quantity += item.quantity || 0
       existing.revenue += item.total_price || 0
     } else {
       productMap.set(key, {
+        id: product.id,
         name: product.name,
         company: product.company,
         quantity: item.quantity || 0,
@@ -66,7 +67,7 @@ export async function VentasPorProducto() {
         <ProductSalesChart data={products} />
         <div className="mt-6 space-y-2">
           {products.map((p, i) => (
-            <div key={p.name} className="flex items-center justify-between py-2 border-b last:border-0">
+            <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground w-6">{i + 1}.</span>
                 <div>
