@@ -60,7 +60,9 @@ export default async function VentasPage({ searchParams }: VentasPageProps) {
       {!clientId && (
         <div className="mb-6 flex flex-col gap-3">
           <PeriodFilter currentYear={new Date().getFullYear()} />
+          {/* Remount when the on-screen period changes so the PDF pickers follow it */}
           <DownloadRemisionesPDF
+            key={`${year ?? ""}-${month ?? ""}-${period ?? ""}`}
             currentYear={new Date().getFullYear()}
             clients={clients || []}
           />

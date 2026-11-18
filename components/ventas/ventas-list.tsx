@@ -8,6 +8,9 @@ import { PaginationControls } from "@/components/ui/pagination-controls"
 import { resolvePeriodRange } from "@/lib/periods"
 
 const PAGE_SIZE = 10
+const TOTALS_PAGE_SIZE = 1000
+// Render dates in Colombian time; the server may run in UTC.
+const TIME_ZONE = "America/Bogota"
 
 type PaymentFilter = "contado" | "transferencia" | "credito"
 
@@ -56,6 +59,8 @@ export async function VentasList({ page = 1, saleType, clientId, year, month, pe
       clients (name, document, phone)
     `, { count: "exact" })
     .order("created_at", { ascending: false })
+    // Tie-breaker so pagination never repeats or skips rows with equal timestamps.
+    .order("id", { ascending: false })
 
   if (saleType) {
     query = query.eq("sale_type", saleType)
@@ -72,18 +77,31 @@ export async function VentasList({ page = 1, saleType, clientId, year, month, pe
     return <div>Error al cargar ventas</div>
   }
 
-  // Totals always cover the whole fortnight (all payment types), not just the
+  // Totals always cover the whole period (all payment types), not just the
   // current page, so the breakdown stays meaningful regardless of pagination.
   let totals: SalesTotals | null = null
   if (range) {
-    const { data: rows } = await supabase
-      .from("buys")
-      .select("sale_type, total_amount")
-      .gte("created_at", range.start)
-      .lt("created_at", range.endExclusive)
+    // Supabase caps each response at 1000 rows, so page through the range.
+    const rows: { sale_type: string; total_amount: number | null }[] = []
+    for (let offset = 0; ; offset += TOTALS_PAGE_SIZE) {
+      const { data, error: totalsError } = await supabase
+        .from("buys")
+        .select("sale_type, total_amount")
+        .gte("created_at", range.start)
+        .lt("created_at", range.endExclusive)
+        .order("id", { ascending: true })
+        .range(offset, offset + TOTALS_PAGE_SIZE - 1)
+
+      if (totalsError) {
+        console.error("Error fetching sales totals:", totalsError)
+        return <div>Error al cargar los totales de ventas</div>
+      }
+      rows.push(...(data || []))
+      if (!data || data.length < TOTALS_PAGE_SIZE) break
+    }
 
     totals = { total: 0, contado: 0, transferencia: 0, credito: 0 }
-    for (const row of rows || []) {
+    for (const row of rows) {
       const amount = row.total_amount || 0
       totals.total += amount
       if (row.sale_type === "contado") totals.contado += amount
@@ -196,6 +214,7 @@ export async function VentasList({ page = 1, saleType, clientId, year, month, pe
                           year: "numeric",
                           month: "long",
                           day: "numeric",
+                          timeZone: TIME_ZONE,
                         })}</span>
                       </div>
                       <span className="text-sm font-semibold text-foreground">
@@ -225,11 +244,11 @@ export async function VentasList({ page = 1, saleType, clientId, year, month, pe
           <div className="text-center py-12 text-muted-foreground">
             <ShoppingBag className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-medium mb-2">
-              {range ? "No hay ventas en esta quincena" : "No hay ventas registradas"}
+              {range ? "No hay ventas en este período" : "No hay ventas registradas"}
             </h3>
             <p className="text-sm mb-4">
               {range
-                ? "Prueba con otra quincena o registra una venta"
+                ? "Prueba con otro período o registra una venta"
                 : "Comienza registrando tu primera venta"}
             </p>
             <Button asChild>
@@ -440,7 +459,7 @@ async function ClientSalesSummary({ clientId }: { clientId: string }) {
                   <div>
                     <p className="font-medium text-green-700">{buy.buy_number}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(buy.created_at).toLocaleDateString("es-CO")}
+                      {new Date(buy.created_at).toLocaleDateString("es-CO", { timeZone: TIME_ZONE })}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

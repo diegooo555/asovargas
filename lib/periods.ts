@@ -100,9 +100,10 @@ export function resolvePeriodRange(
   }
 
   const startDay = scope === "q1" ? 1 : 16
+  const endDay = scope === "q1" ? 15 : lastDay
   return {
     start: `${year}-${pad(month)}-${pad(startDay)}T00:00:00-05:00`,
-    endExclusive: nextDayIso(year, month, lastDay),
+    endExclusive: nextDayIso(year, month, endDay),
     label: `${scope === "q1" ? "1ra quincena (1–15)" : "2da quincena (16–fin de mes)"} de ${monthName} ${year}`,
     scope,
     year,

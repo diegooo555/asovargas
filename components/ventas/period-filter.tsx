@@ -52,7 +52,10 @@ export function PeriodFilter({ currentYear }: PeriodFilterProps) {
     router.push(`/dashboard/ventas${qs ? `?${qs}` : ""}`)
   }
 
-  const years = [currentYear, currentYear - 1, currentYear - 2]
+  // Keep a year that came from the URL selectable even if it is older.
+  const years = Array.from(new Set([currentYear, currentYear - 1, currentYear - 2, Number(year)]))
+    .filter((y) => Number.isFinite(y))
+    .sort((a, b) => b - a)
 
   const handleMonth = (value: string) =>
     push({ year, month: value, period: period === "year" || !period ? "month" : period })

@@ -43,6 +43,18 @@ const MONTHS = [
 const PRIMARY: [number, number, number] = [22, 101, 52] // Tailwind green-800
 const GRAY: [number, number, number] = [110, 110, 110]
 const MARGIN = 12
+const FETCH_PAGE_SIZE = 1000
+// 50 ids per chunk keeps each item query under 1000 rows unless a sale has
+// more than 20 lines, and keeps the request URL well below server limits.
+const ID_CHUNK_SIZE = 50
+const TIME_ZONE = "America/Bogota"
+// Two remisiones per letter page: gap around the middle cut line, room for the
+// "Página x de y" footer, and the block (total + signatures + thanks) that
+// must never be split from itself.
+const SLOT_GAP = 4
+const SLOT_MARGIN = 8
+const PAGE_FOOTER_SPACE = 8
+const CLOSING_HEIGHT = 25
 
 const SALE_TYPE_LABELS: Record<string, string> = {
   contado: "Contado",
@@ -84,12 +96,23 @@ interface RemisionData {
   logoDataUrl: string | null
 }
 
-function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: RemisionData) {
+/**
+ * Draws one remisión starting at `top` and returns the y where it ends.
+ * Tables break onto a new page when they reach `bottom`, so a remisión that is
+ * too tall for its slot still renders completely (it just spills over).
+ */
+function renderRemision(
+  pdf: jsPDF,
+  { buy, items, pajillaItems, logoDataUrl }: RemisionData,
+  top: number,
+  bottom: number,
+): number {
   const pageWidth = pdf.internal.pageSize.width
   const pageHeight = pdf.internal.pageSize.height
   const contentWidth = pageWidth - MARGIN * 2
+  const tableMargin = { left: MARGIN, right: MARGIN, top: MARGIN, bottom: pageHeight - bottom }
   const client = buy.clients || {}
-  let y = MARGIN
+  let y = top
 
   // ---- Header ----
   const textX = logoDataUrl ? MARGIN + 14 : MARGIN
@@ -110,8 +133,13 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
   pdf.text("Asociación Agroturística Pantano de Vargas", textX, y + 8.5)
 
   const created = new Date(buy.created_at)
-  const dateStr = created.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" })
-  const timeStr = created.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })
+  const dateStr = created.toLocaleDateString("es-CO", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: TIME_ZONE,
+  })
+  const timeStr = created.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", timeZone: TIME_ZONE })
 
   pdf.setFont("helvetica", "bold")
   pdf.setFontSize(11)
@@ -125,15 +153,15 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
   pdf.setTextColor(...PRIMARY)
   pdf.text(SALE_TYPE_LABELS[buy.sale_type] || buy.sale_type || "—", pageWidth - MARGIN, y + 13, { align: "right" })
 
-  y += 15
+  y += 14
   pdf.setDrawColor(...PRIMARY)
   pdf.setLineWidth(0.4)
   pdf.line(MARGIN, y, pageWidth - MARGIN, y)
-  y += 4
+  y += 3
 
   // ---- Buyer info ----
   pdf.setFillColor(245, 245, 245)
-  pdf.rect(MARGIN, y, contentWidth, 8, "F")
+  pdf.rect(MARGIN, y, contentWidth, 7, "F")
   const fields = [
     ["Nombre", client.name],
     ["Documento", client.document],
@@ -147,13 +175,13 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
     const labelText = `${label}: `
     pdf.setFont("helvetica", "bold")
     pdf.setTextColor(...GRAY)
-    pdf.text(labelText, cx, y + 5)
+    pdf.text(labelText, cx, y + 4.6)
     const labelW = pdf.getTextWidth(labelText)
     pdf.setFont("helvetica", "normal")
     pdf.setTextColor(30, 30, 30)
-    pdf.text(truncate(pdf, String(value || "—"), colW - labelW - 4), cx + labelW, y + 5)
+    pdf.text(truncate(pdf, String(value || "—"), colW - labelW - 4), cx + labelW, y + 4.6)
   })
-  y += 12
+  y += 11
 
   // ---- Products ----
   const productsTotal = items.reduce((sum, item) => sum + (item.total_price || 0), 0)
@@ -166,7 +194,7 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
     pdf.text("PRODUCTOS", MARGIN, y)
     autoTable(pdf, {
       startY: y + 1.5,
-      margin: { left: MARGIN, right: MARGIN },
+      margin: tableMargin,
       head: [["#", "Producto", "Empresa", "Cant.", "P. Unit.", "Total"]],
       body: items.map((item, i) => [
         String(i + 1),
@@ -177,8 +205,9 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
         money(item.total_price),
       ]),
       foot: [["", "", "", "", "Subtotal productos", money(productsTotal)]],
+      showFoot: "lastPage",
       theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.2, lineColor: [220, 220, 220], lineWidth: 0.1 },
+      styles: { fontSize: 7.5, cellPadding: 0.9, lineColor: [220, 220, 220], lineWidth: 0.1 },
       headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: "bold" },
       footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: "bold" },
       columnStyles: {
@@ -188,18 +217,22 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
         5: { cellWidth: 26, halign: "right" },
       },
     })
-    y = (pdf as any).lastAutoTable.finalY + 6
+    y = (pdf as any).lastAutoTable.finalY + 4
   }
 
   // ---- Pajillas ----
   if (pajillaItems.length > 0) {
+    if (y + 15 > bottom) {
+      pdf.addPage()
+      y = MARGIN
+    }
     pdf.setFont("helvetica", "bold")
     pdf.setFontSize(8)
     pdf.setTextColor(...PRIMARY)
     pdf.text("PAJILLAS DE INSEMINACIÓN", MARGIN, y)
     autoTable(pdf, {
       startY: y + 1.5,
-      margin: { left: MARGIN, right: MARGIN },
+      margin: tableMargin,
       head: [["#", "Toro", "Raza", "Empresa", "Cant.", "P. Unit.", "Total"]],
       body: pajillaItems.map((item, i) => [
         String(i + 1),
@@ -211,8 +244,9 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
         money(item.total_price),
       ]),
       foot: [["", "", "", "", "", "Subtotal pajillas", money(pajillasTotal)]],
+      showFoot: "lastPage",
       theme: "grid",
-      styles: { fontSize: 8, cellPadding: 1.2, lineColor: [220, 220, 220], lineWidth: 0.1 },
+      styles: { fontSize: 7.5, cellPadding: 0.9, lineColor: [220, 220, 220], lineWidth: 0.1 },
       headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: "bold" },
       footStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: "bold" },
       columnStyles: {
@@ -222,24 +256,22 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
         6: { cellWidth: 24, halign: "right" },
       },
     })
-    y = (pdf as any).lastAutoTable.finalY + 6
+    y = (pdf as any).lastAutoTable.finalY + 4
   }
 
-  // ---- Total ----
+  // ---- Total + signatures + thanks (kept together) ----
+  if (y + CLOSING_HEIGHT > bottom) {
+    pdf.addPage()
+    y = MARGIN
+  }
   const grandTotal = buy.total_amount ?? productsTotal + pajillasTotal
   pdf.setFont("helvetica", "bold")
   pdf.setFontSize(11)
   pdf.setTextColor(...PRIMARY)
   pdf.text(`TOTAL: ${money(grandTotal)}`, pageWidth - MARGIN, y + 3, { align: "right" })
-  y += 10
 
-  // ---- Signatures ----
-  if (y > pageHeight - 55) {
-    pdf.addPage()
-    y = MARGIN + 5
-  }
   const half = contentWidth / 2
-  const sigY = y + 14
+  const sigY = y + 11
   pdf.setDrawColor(0, 0, 0)
   pdf.setLineWidth(0.2)
   pdf.line(MARGIN + 10, sigY, MARGIN + half - 10, sigY)
@@ -252,28 +284,90 @@ function renderRemision(pdf: jsPDF, { buy, items, pajillaItems, logoDataUrl }: R
   pdf.setFont("helvetica", "normal")
   pdf.setFontSize(7)
   pdf.setTextColor(...GRAY)
-  pdf.text("Nombre: ___________________", MARGIN + half / 2, sigY + 8, { align: "center" })
-  pdf.text("C.C.: ___________________", MARGIN + half / 2, sigY + 11.5, { align: "center" })
+  pdf.text("Nombre: ___________________", MARGIN + half / 2, sigY + 7, { align: "center" })
+  pdf.text("C.C.: ___________________", MARGIN + half / 2, sigY + 10, { align: "center" })
   pdf.text(
     truncate(pdf, `Nombre: ${client.name || "___________________"}`, half - 20),
     MARGIN + half + half / 2,
-    sigY + 8,
+    sigY + 7,
     { align: "center" },
   )
   pdf.text(
     `C.C.: ${client.document || "___________________"}`,
     MARGIN + half + half / 2,
-    sigY + 11.5,
+    sigY + 10,
     { align: "center" },
   )
 
-  // ---- Page footer ----
-  pdf.setFont("helvetica", "normal")
-  pdf.setFontSize(7)
-  pdf.setTextColor(...GRAY)
-  pdf.text(`Gracias por su compra — ASOVARGAS © ${new Date().getFullYear()}`, pageWidth / 2, pageHeight - 10, {
+  pdf.text(`Gracias por su compra — ASOVARGAS © ${new Date().getFullYear()}`, pageWidth / 2, sigY + 13.5, {
     align: "center",
   })
+
+  return sigY + 14
+}
+
+/**
+ * Height a remisión needs, measured by rendering it on a throwaway document.
+ * Returns Infinity when it would not fit on a single page at all.
+ */
+function measureRemision(data: RemisionData): number {
+  const probe = new jsPDF({ unit: "mm", format: "letter" })
+  const end = renderRemision(probe, { ...data, logoDataUrl: null }, 0, probe.internal.pageSize.height)
+  return probe.getNumberOfPages() > 1 ? Infinity : end
+}
+
+/** Dashed guide line between the two remisiones on a page, for cutting. */
+function drawCutLine(pdf: jsPDF, y: number) {
+  const pageWidth = pdf.internal.pageSize.width
+  pdf.setDrawColor(170, 170, 170)
+  pdf.setLineWidth(0.2)
+  pdf.setLineDashPattern([2, 2], 0)
+  pdf.line(MARGIN / 2, y, pageWidth - MARGIN / 2, y)
+  pdf.setLineDashPattern([], 0)
+}
+
+/**
+ * Lays remisiones out two per page (top and bottom half). A remisión too tall
+ * for half a page gets a page of its own so nothing is shrunk or cut off.
+ */
+function layoutRemisiones(pdf: jsPDF, remisiones: RemisionData[]) {
+  const pageHeight = pdf.internal.pageSize.height
+  const middle = pageHeight / 2
+  const slots = [
+    { top: SLOT_MARGIN, bottom: middle - SLOT_GAP },
+    { top: middle + SLOT_GAP, bottom: pageHeight - PAGE_FOOTER_SPACE },
+  ]
+  const slotHeight = Math.min(...slots.map((s) => s.bottom - s.top))
+  const fullBottom = pageHeight - PAGE_FOOTER_SPACE
+
+  // Index of the next free slot on the current page: 0 = top, 1 = bottom, 2 = page full.
+  let nextSlot = 0
+  let isFirstPage = true
+  const newPage = () => {
+    if (!isFirstPage) pdf.addPage()
+    isFirstPage = false
+  }
+
+  for (const remision of remisiones) {
+    const fitsHalf = measureRemision(remision) <= slotHeight
+
+    if (!fitsHalf) {
+      newPage()
+      renderRemision(pdf, remision, MARGIN, fullBottom)
+      nextSlot = 2
+      continue
+    }
+
+    if (nextSlot === 1) {
+      drawCutLine(pdf, middle)
+      renderRemision(pdf, remision, slots[1].top, slots[1].bottom)
+      nextSlot = 2
+    } else {
+      newPage()
+      renderRemision(pdf, remision, slots[0].top, slots[0].bottom)
+      nextSlot = 1
+    }
+  }
 }
 
 interface ClientOption {
@@ -349,37 +443,56 @@ export function DownloadRemisionesPDF({ currentYear, clients = [] }: DownloadRem
 
     setIsGenerating(true)
     try {
-      let query = supabase
-        .from("buys")
-        .select(`*, clients (*)`)
-        .gte("created_at", span.start)
-        .lt("created_at", span.endExclusive)
+      // Supabase caps each response at 1000 rows, so page through the range.
+      const buys: any[] = []
+      for (let offset = 0; ; offset += FETCH_PAGE_SIZE) {
+        let query = supabase
+          .from("buys")
+          .select(`*, clients (*)`)
+          .gte("created_at", span.start)
+          .lt("created_at", span.endExclusive)
 
-      if (clientId) query = query.eq("client_id", clientId)
+        if (clientId) query = query.eq("client_id", clientId)
 
-      const { data, error } = await query.order("created_at", { ascending: true })
+        const { data, error } = await query
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(offset, offset + FETCH_PAGE_SIZE - 1)
 
-      if (error) throw error
-      const buys = (data || []) as any[]
+        if (error) throw error
+        buys.push(...(data || []))
+        if (!data || data.length < FETCH_PAGE_SIZE) break
+      }
+
       if (buys.length === 0) {
         toast.info("No hay ventas en el período seleccionado")
         return
       }
 
+      // Chunk the ids to keep the `in` filter URL short.
       const ids = buys.map((b: any) => b.id)
-      const [{ data: itemsData }, { data: pajillaItemsData }] = await Promise.all([
-        supabase.from("buy_items").select(`*, products (name, company)`).in("buy_id", ids),
-        supabase.from("buy_pajilla_items").select(`*, pajillas (bull_name, breed, company)`).in("buy_id", ids),
-      ])
+      const itemsData: any[] = []
+      const pajillaItemsData: any[] = []
+      for (let i = 0; i < ids.length; i += ID_CHUNK_SIZE) {
+        const chunk = ids.slice(i, i + ID_CHUNK_SIZE)
+        const [itemsRes, pajillaRes] = await Promise.all([
+          supabase.from("buy_items").select(`*, products (name, company)`).in("buy_id", chunk),
+          supabase.from("buy_pajilla_items").select(`*, pajillas (bull_name, breed, company)`).in("buy_id", chunk),
+        ])
+        if (itemsRes.error) throw itemsRes.error
+        if (pajillaRes.error) throw pajillaRes.error
+        itemsData.push(...(itemsRes.data || []))
+        pajillaItemsData.push(...(pajillaRes.data || []))
+      }
 
       const itemsByBuy = new Map<string, any[]>()
-      for (const item of (itemsData || []) as any[]) {
+      for (const item of itemsData) {
         const list = itemsByBuy.get(item.buy_id) || []
         list.push(item)
         itemsByBuy.set(item.buy_id, list)
       }
       const pajillasByBuy = new Map<string, any[]>()
-      for (const item of (pajillaItemsData || []) as any[]) {
+      for (const item of pajillaItemsData) {
         const list = pajillasByBuy.get(item.buy_id) || []
         list.push(item)
         pajillasByBuy.set(item.buy_id, list)
@@ -388,15 +501,15 @@ export function DownloadRemisionesPDF({ currentYear, clients = [] }: DownloadRem
       const logoDataUrl = await loadLogoDataUrl()
       const pdf = new jsPDF({ unit: "mm", format: "letter" })
 
-      buys.forEach((buy: any, index: number) => {
-        if (index > 0) pdf.addPage()
-        renderRemision(pdf, {
+      layoutRemisiones(
+        pdf,
+        buys.map((buy: any) => ({
           buy,
           items: itemsByBuy.get(buy.id) || [],
           pajillaItems: pajillasByBuy.get(buy.id) || [],
           logoDataUrl,
-        })
-      })
+        })),
+      )
 
       const footerLabel = selectedClient ? `${span.label} · ${selectedClient.name}` : span.label
       const fileSlug = `${selectedClient ? `${slugify(selectedClient.name)}-` : ""}${periodSpanSlug(span)}`
